@@ -1,0 +1,140 @@
+#!/usr/bin/env python
+
+# -*- coding: utf-8 -*-
+"""
+@File    : main.py
+@Time    : 2022/2/13 下午6:14  
+"""
+import time, importlib, os, re, logging, sys
+from pathlib import Path
+
+from util import common
+
+
+class Parse(common.Common):
+    def __init__(self, params):
+        super().__init__()
+        self.abspath = os.path.abspath(os.path.dirname(__file__))
+        self.cwd = os.getcwd()
+        if params.get("debug"):
+            logging.basicConfig(
+                format="%(asctime)s %(filename)s[%(funcName)s:%(lineno)d] %(levelname)s %(message)s",
+                level=logging.DEBUG,
+            )
+
+            logging.getLogger("urllib3").setLevel(logging.WARNING)
+            logging.getLogger("chardet").setLevel(logging.WARNING)
+        else:
+            logging.basicConfig(
+                format="%(asctime)s %(filename)s[%(funcName)s:%(lineno)d] %(levelname)s %(message)s",
+                level=logging.WARNING,
+            )
+
+        self.configuration()
+        if params["parse"] == "config":
+            if not Path(f"{self.abspath}/config/config.py").exists():
+                content = 'iniPath=""\nfilePath=""'
+                self.write(f"{self.abspath}/config/config.py", content)
+                print("Created: config.py created successfully")
+            else:
+                print("Exists: config.py already exists")
+
+        elif params["parse"] == "ini":
+            pass
+        elif params.get("playlist"):
+            self.playList(params)
+        else:
+            self.working(params)
+
+    def configuration(self):
+        self.getConfig("config")
+        self.getConfig("profile")
+        self.getConfig("user")
+
+    def working(self, params):
+        params["category"] = params.get("category", "video")
+        params["hd"] = params.get("hd") or self.get("hd") or 6
+        params["parse"] = str(params["parse"])
+        if self.hasurl(params["parse"]):
+            site = self.domain(params["parse"])
+            if site in self.prepare_location():
+                params["parse"] = self.curl(
+                    {
+                        "url": params["parse"],
+                        "response": "location",
+                    }
+                )
+            type = self.prepare_change(site)
+
+        else:
+            site = params["type"]
+
+            type = self.prepare_change(site)
+
+        if self.get("userChange") and site in self.userChange.keys():
+            type = self.userChange[site]
+
+        params["site"] = site
+        params["type"] = type
+        try:
+            imp = importlib.import_module(f"parse.{params['category']}.{type}")
+            self.imp = imp
+            a = imp.Main()
+
+            a.init(params)
+        except ValueError as e:
+            print(e)
+        except KeyboardInterrupt:
+            # ctrl + c 终止运行
+            print("\r\n")
+            logging.warning("End Process")
+            sys.exit()
+
+    def playList(self, params):
+        domain = self.match(r"(\w+(?:-\w+)*).\w+\/", params["parse"])
+
+        type = params.get("type") or domain
+        category = params.get("category") or "video"
+        # try:
+
+        try:
+            imp = importlib.import_module(f"parse.playlist.{type}")
+            a = imp.Main()
+            data = getattr(a, f"{category}List")(params)
+            assert len(data["data"]) > 0, "lists"
+            params["category"] = data.get("category")
+            params["type"] = data.get("type")
+
+            if params.get("choose"):
+                params["choose"] = str(params["choose"])
+                if ":" in params["choose"]:
+                    spl = [i for i in params["choose"].split(":") if i]
+                    start = int(spl[0]) - 1
+
+                    if len(spl) > 1:
+                        parseLists = data["data"][start : int(spl[1])]
+                    else:
+                        parseLists = data["data"][start:]
+
+                else:
+                    spl = params["choose"].split(",")
+                    parseLists = []
+                    for i in spl:
+                        try:
+                            parseLists.append(data["data"][int(i) - 1])
+                        except:
+                            pass
+            else:
+                parseLists = data["data"]
+
+        except:
+            parseLists = [params["parse"]]
+        for i in parseLists:
+            if isinstance(i, dict):
+                params = {**params, **i}
+            else:
+                params["parse"] = i
+
+            self.working(params)
+        # except:
+        #     pass
