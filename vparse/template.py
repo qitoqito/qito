@@ -25,6 +25,7 @@ class Template(common.Common):
     def init(self, params):
         self.params = params
         self.getConfig("config")
+        self.getConfig("profile")
         # 处理proxy代理模块
         if params.get("proxy"):
             self.proxy = params["proxy"]
@@ -32,14 +33,19 @@ class Template(common.Common):
         self.run()
 
     def run(self):
+        parse = {}
         if self.get("iniPath"):
             ini = self.parseIni(f'{self.iniPath}/{self.params["type"]}.ini')
+            config = self.parseIni(f"{self.iniPath}/config.ini")
+
         else:
             ini = self.parseIni(f'{self.abspath}/ini/{self.params["type"]}.ini')
+            config = self.parseIni(f"{self.abspath}/ini/config.ini")
 
-        for k, v in ini.items():
-            self.set(k, v)
-
+        # for k, v in ini.items():
+        #     self.set(k, v)
+        # for k, v in config.items():
+        #     self.set(k, v)
         if self.get("import"):
             self.include()
         try:
@@ -51,10 +57,13 @@ class Template(common.Common):
             parse = {**self.params, **query}
 
         else:
-            self.params = {**self.params, **query}
+            try:
+                self.params = {**self.params, **query}
 
-            parse = self.parse()
-            parse = {**self.params, **parse}
+                parse = self.parse()
+                parse = {**self.params, **parse}
+            except AssertionError as e:
+                print(e)
 
         self.data = parse
         if self.data.get("title"):
@@ -65,10 +74,16 @@ class Template(common.Common):
             self.execute_init()
         elif self.params.get("player") and not self.params.get("query"):
             self.execute_init()
-        elif self.params.get("dumps"):
+        elif self.params.get("json"):
+            if self.get("jsonFilter"):
+                filter = self.jsonFilter.split("|")
+                parse = dict([k, v] for k, v in parse.items() if k not in filter)
             print(json.dumps(parse, indent=2, ensure_ascii=False))
         else:
             parse["code"] = 0
+            if self.get("jsonFilter"):
+                filter = self.jsonFilter.split("|")
+                parse = dict([k, v] for k, v in parse.items() if k not in filter)
             print(parse)
 
     def compact(self):

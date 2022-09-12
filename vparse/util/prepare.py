@@ -26,7 +26,7 @@ class Prepare:
                 "iqiyi": ["live.iqiyi.com\/(.*)"],
                 "pps": ["gamelive.iqiyi.com", "x.pps.tv"],
                 "zhuafan": ["www.zhuafan.live\/(\d+)"],
-                "douyin": ["webcast.amemv.com\/webcast"],
+                "douyin": ["webcast.amemv.com\/","live.douyin.com"],
                 "douyu": ["www.douyu.com\/(\d+)", "(douyu.com\/topic)"],
                 "bilibili": ["(live.bilibili)"],
                 "cctv": ["(cctv.com\/live)"],
@@ -101,7 +101,19 @@ class Prepare:
             dicts = {"le": {"350": "流畅", "1000": "标清"}, "youku": {"mp4sd": "标清"}}
         try:
 
-            data = dicts[params["type"]]
+            if self.get(f"{params['category']}Quality") and self.get(
+                f"{params['category']}Quality"
+            ).get(params["type"]):
+                data = dict(
+                    k.split(":")
+                    for k in (
+                        self.get(f"{params['category']}Quality")
+                        .get(params["type"])
+                        .split("|")
+                    )
+                )
+            else:
+                data = dicts[params["type"]]
             quality = params["quality"]
             params["quality"] = [data.get(k, k) if k in data else k for k in quality]
             if quality != params["quality"]:

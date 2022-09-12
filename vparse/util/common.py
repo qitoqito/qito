@@ -95,6 +95,8 @@ class Common(execute.Execute, prepare.Prepare):
             proxies = {}
         if params.get("headers"):
             headers = params["headers"]
+        elif self.get("headers"):
+            headers = self.headers
         else:
             headers = {}
         if (
@@ -115,25 +117,30 @@ class Common(execute.Execute, prepare.Prepare):
             headers["Cookie"] = params["cookie"]
 
         if params.get("ua"):
-            headers["User-Agent"] = params["ua"]
-        # ua = params.get("useragent")
-        # if "user-agent" in headers:
-        #     ua = headers["user-agent"]
-        # elif "User-Agent" in headers:
-        #     ua = headers["User-Agent"]
-        # elif ua == "ios":
-        #     ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0_1 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) CriOS/74.0.3729.155 Mobile/15E148 Safari/604.1"
-        # elif ua == "android":
-        #     ua = "Mozilla/5.0 (Linux; Android 9; Mi A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Mobile Safari/537.36"
-        # elif ua == "pc":
-        #     ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:67.0) Gecko/20100101 Firefox/67.0"
-        # elif ua in ["wechat", "weixin"]:
-        #     ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) MicroMessenger/2.3.25(0x12031910) MacWechat Chrome/39.0.2171.95 Safari/537.36 NetType/WIFI WindowsWechat"
-        # elif ua:
-        #     pass
-        # else:
-        #     ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:67.0) Gecko/20100101 Firefox/67.0"
-        # headers["User-Agent"] = ua
+            if params["ua"] == "ios":
+                headers[
+                    "User-Agent"
+                ] = "Mozilla/5.0 (iPhone; CPU iPhone OS 12_0_1 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) CriOS/74.0.3729.155 Mobile/15E148 Safari/604.1"
+            elif params["ua"] == "android":
+                headers[
+                    "User-Agent"
+                ] = "Mozilla/5.0 (Linux; Android 9; Mi A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Mobile Safari/537.36"
+            elif params["ua"] == "pc":
+                headers[
+                    "User-Agent"
+                ] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:67.0) Gecko/20100101 Firefox/67.0"
+            if params["ua"] == "wechat":
+                headers[
+                    "User-Agent"
+                ] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) MicroMessenger/2.3.25(0x12031910) MacWechat Chrome/39.0.2171.95 Safari/537.36 NetType/WIFI WindowsWechat"
+            else:
+                headers["User-Agent"] = params["ua"]
+        if not headers.get("user-agent") or not headers.get("User-Agent"):
+            headers[
+                "User-Agent"
+            ] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36"
+        if params.get("referer"):
+            headers["Referer"] = params["referer"]
         args = dict(
             proxies=proxies,
             headers=headers,
@@ -372,14 +379,15 @@ class Common(execute.Execute, prepare.Prepare):
         try:
             with open(iniPath) as fileObj:
                 contents = fileObj.read()
-            text = f"[AABBCC]{contents}[XXYYZZ]"
+            text = f"[ENV]{contents}[EOF]"
             dict = {}
             cookies = {}
+            self.params = self.get("params") or {"category": ""}
             for i in self.matchAll(r"\[\s*(\w+)\s*\]([^\[]+)", text):
                 col = [x for x in i[1].split("\n") if x]
                 if "cookie" in i[0]:
                     dict[i[0]] = col
-                elif i[0] == self.params["category"]:
+                elif i[0]:
                     dict[i[0]] = {}
                     for k in col:
                         d = self.match(r"(\w+)\s*=\s*([^\n]+)\s*", k)
@@ -398,6 +406,8 @@ class Common(execute.Execute, prepare.Prepare):
                     dict["cookie"] = random.choice(dict["cookies"])
                 else:
                     dict["cookies"] = [dict["cookie"]]
+            for k, v in dict.items():
+                self.set(k, v)
             return dict
         except:
             return {}

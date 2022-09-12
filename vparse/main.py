@@ -18,7 +18,7 @@ class Parse(common.Common):
         self.cwd = os.getcwd()
         if params.get("debug"):
             logging.basicConfig(
-                format="%(asctime)s %(filename)s[%(funcName)s:%(lineno)d] %(levelname)s %(message)s",
+                format="%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d:%(message)s",
                 level=logging.DEBUG,
             )
 
@@ -26,7 +26,7 @@ class Parse(common.Common):
             logging.getLogger("chardet").setLevel(logging.WARNING)
         else:
             logging.basicConfig(
-                format="%(asctime)s %(filename)s[%(funcName)s:%(lineno)d] %(levelname)s %(message)s",
+                format="%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d:%(message)s",
                 level=logging.WARNING,
             )
 
@@ -50,9 +50,13 @@ class Parse(common.Common):
         self.getConfig("config")
         self.getConfig("profile")
         self.getConfig("user")
+        if self.get("iniPath"):
+            ini = self.parseIni(f"{self.iniPath}/config.ini")
+        else:
+            ini = self.parseIni(f"{self.abspath}/ini/config.ini")
 
     def working(self, params):
-        params["category"] = params.get("category", "video")
+        params["category"] = params.get("category") or self.get("category") or "video"
         params["hd"] = params.get("hd") or self.get("hd") or 6
         params["parse"] = str(params["parse"])
         if self.hasurl(params["parse"]):
@@ -66,13 +70,19 @@ class Parse(common.Common):
                 )
             type = self.prepare_change(site)
 
+            for k, v in self.prepare_category().items():
+                if site in v:
+                    if self.match(v[site], params["parse"]):
+                        params["category"] = k
+                        break
+
         else:
             site = params["type"]
 
             type = self.prepare_change(site)
 
-        if self.get("userChange") and site in self.userChange.keys():
-            type = self.userChange[site]
+        if self.get("site") and site in self.siteChange.keys():
+            type = self.siteChange[site]
 
         params["site"] = site
         params["type"] = type

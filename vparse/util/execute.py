@@ -25,9 +25,11 @@ class Execute:
         print("\n")
 
     def execute_directory(self):
-        self.data["dir"] = self.data.get("dir", f"{self.cwd}/download")
-        if not  Path(self.data["dir"]).exists():
-            os.mkdir(self.data["dir"])
+        self.data["dir"] = (
+            self.data.get("dir") or f"{self.cwd}/download/{self.data['type']}"
+        )
+        if not Path(self.data["dir"]).exists():
+            os.makedirs(self.data["dir"])
 
     def execute_console(self):
         if self.data.get("name"):
@@ -78,17 +80,18 @@ class Execute:
             self.data["target"] = self.data["streams"]["segs"][0]["url"]
         else:
             self.data["target"] = self.data["streams"][self.data["playback"]]
-
             # 播放
         if "temp" in [self.haskey(self.data, "extra.player"), self.data["player"]]:
             self.player_temp()
-        elif ":" in self.data.get("itag", ""):
+        elif self.data.get("itag") and ":" in self.data["itag"]:
             self.player_itag()
         elif self.data["player"] == "mpv":
             self.player_mpv()
 
     def execute_download(self):
-        if self.data["ext"] == "m3u8":
+        if self.data["category"] == "live":
+            self.download_live()
+        elif self.data["ext"] == "m3u8":
             self.download_m3u8()
         else:
             self.download_segs()
@@ -222,7 +225,7 @@ class Execute:
             return
         if Path(self.data["path"]).exists():
             self.data["filename"] = self.data["filename"]
-            print(f'\rExists: {self.data["path"]}', end="")
+            print(f'Exists: {self.data["path"]}', end="")
             return
         self.data["text"] = []
         reload = self.data["extra"].get("reload", 0)
@@ -601,7 +604,7 @@ class Execute:
         self.data["path"] = f"{self.data['dir']}/{self.data['filename']}"
         url = self.data["streams"][self.data["ext"]]
 
-        print(f"M3U8: {url} \n")
+        print(f"M3U8: {url}")
 
         if self.data.get("capture"):
             self.data["target"] = url
@@ -610,7 +613,15 @@ class Execute:
 
         if Path(self.data["path"]).exists():
             self.data["filename"] = self.data["filename"]
-            print(f'\rExists: {self.data["path"]}', end="")
+            print(f'Exists: {self.data["path"]}', end="")
+            return
+
+        if (
+            Path(f"{self.data['dir']}/{self.data['title']}{show}.mp4")
+            and self.data["format"] != "mp4"
+        ):
+            self.data["input"] = f"{self.data['dir']}/{self.data['title']}{show}.mp4"
+            self.download_ffmpeg()
             return
 
         try:
@@ -654,3 +665,89 @@ class Execute:
             self.data["text"].append(f"{self.data['dir']}/{filename}")
         self.download_multi()
         self.download_merge()
+
+    def download_ffmpeg(self):
+        cmd = [
+            "ffmpeg",
+            "-i",
+            self.data["input"],
+            "-vcodec",
+            "copy",
+            "-acodec",
+            "copy",
+        ]
+        if self.data.get("format") in ["mp4"]:
+            cmd.extend(["-bsf:a", "aac_adtstoasc"])
+
+        cmd.extend([self.data["path"]])
+        try:
+            subprocess.call(
+                cmd,
+                env=self.env,
+            )
+
+        except:
+            logging.error("ffmpeg error!")
+    def download_live(self):
+        """
+            直播下载,直接使用ffmpeg录制
+            :param self:
+            :return:
+            """
+        show = f"[{self.data['show']}]" if self.data.get("show") else ""
+
+        if self.data["ext"] == "hls":
+            ext = self.data.get("format", "mp4")
+            self.data["target"] = self.data["streams"]["m3u8"]
+            self.data["filename"] = f"{self.data['title']}{show}.{ext}"
+
+        else:
+            ext = self.data.get("format", self.data["ext"])
+            rtime = time.strftime("%Y-%m-%dT%H-%M-%S", time.localtime())
+            self.data["target"] = self.data["streams"][self.data["ext"]]
+            self.data["filename"] = (
+                f"{self.data['title']} - {self.data['anchor']}{show} - {rtime}.{ext}"
+                if self.data.get("anchor")
+                else f"{self.data['title']}{show} - {rtime}.{ext}"
+            )
+        self.data["path"] = f"{self.data['dir']}/{self.data['filename']}"
+
+        if Path(self.data["path"]).exists():
+            pass
+            # sys.exit("已下载")
+
+        headers = []
+        if self.data["extra"].get("headers"):
+            for k, v in self.data["extra"]["headers"].items():
+                headers.append("-headers")
+                headers.append(f"{k}:{v}")
+
+        cmd = [
+            "ffmpeg",
+            "-hide_banner",
+            "-protocol_whitelist",
+            "file,http,https,tls,rtp,tcp,udp,crypto,httpproxy",
+        ]
+        if headers:
+            cmd.extend(
+                [
+                    "-user_agent",
+                    self.data["extra"]["headers"].get("User-Agent")
+                    or self.data["extra"]["headers"].get("user-agent"),
+                ]
+            )
+            cmd.extend(headers)
+        cmd.extend(["-i", self.data["target"]])
+        cmd.extend(
+            [
+                "-c:v",
+                "copy",
+                "-c:a",
+                "copy",
+                "-bsf:a",
+                "aac_adtstoasc",
+                self.data["path"],
+            ]
+        )
+        self.cmd = cmd
+        self.execute_export()
