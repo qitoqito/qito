@@ -89,7 +89,9 @@ class Execute:
             self.player_mpv()
 
     def execute_download(self):
-        if self.data["category"] == "live":
+        if self.data["extra"].get("adaptive"):
+            self.download_youtube()
+        elif self.data["category"] == "live":
             self.download_live()
         elif self.data["ext"] == "m3u8":
             self.download_m3u8()
@@ -751,3 +753,169 @@ class Execute:
         )
         self.cmd = cmd
         self.execute_export()
+    def download_youtube(self):
+        """
+            Youtube下载
+            全局变量itag:当以a:b形式时,a和b不允许同时为video或audio,下载后自动ffmpeg合并
+                当以a(,b(,c))形式存在时,将会下载a(b(c))分段
+                当为video或者audio时,会下载所有itag为video或者audio的分段
+                当为all时,会下载所有itag
+            不存在全局变量itag,将下载指定分辨率的mp4资源
+            :param self:
+            :return:
+            """
+
+        if self.data.get("itag"):
+            if ":" in self.data["itag"] or self.data["itag"] in ["large"]:
+                lists = self.column(self.data["extra"]["adaptive"], "", "itag")
+                if self.data["itag"] in ["large"]:
+                    itags = []
+                    lar = {"video": {}, "audio": {}}
+                    for kk, vv in lists.items():
+                        if "video" in vv["mimeType"] and "avc1" in vv["mimeType"]:
+                            lar["video"][int(vv["contentLength"])] = kk
+                        elif "audio/webm" in vv["mimeType"]:
+                            lar["audio"][int(vv["contentLength"])] = kk
+                    itags.append(lar["video"][sorted(lar["video"].keys())[-1]])
+                    itags.append(lar["audio"][sorted(lar["audio"].keys())[-1]])
+                else:
+                    itags = self.data["itag"].split(":")
+                print("Itag:", itags)
+                cmd = ["ffmpeg", "-hide_banner"]
+                self.data["idxs"] = 2
+                audio = video = ""
+                for k, v in enumerate(itags):
+                    info = lists[int(v)]
+                    mtype = self.match("(\w+)\/(\w+)", info["mimeType"])
+                    filename = f"{self.data['title']}_itag_{v}.{mtype[1]}"
+                    self.data["output"].append(filename)
+                    if mtype[0] == "audio":
+                        audio = v
+                    else:
+                        video = v
+
+                    self.data["threading"].append(
+                        {
+                            "filename": filename,
+                            "target": info["url"],
+                            "idx": k + 1,
+                            "ext": mtype[1],
+                        }
+                    )
+
+                assert audio and video, "video or audio"
+
+                if self.data.get("capture"):
+                    timelength = self.data.get("length")
+                    start = self.seconds(self.data["start"])
+                    end = (
+                        self.seconds(self.data["end"])
+                        if self.data.get("end")
+                        else ""
+                    )
+
+                    if timelength:
+                        t = f"[{self.data['start']}-{timelength}]"
+                    else:
+                        t = (
+                            f"[{self.data['start']}x{self.data['end']}]"
+                            if end
+                            else f"[{start}]"
+                        )
+
+                    self.data["output"] = []
+                    # 实验性,用ffmpeg录制itag片段
+                    ext = self.data.get("format") or "mp4"
+
+                    merge_name = f"{self.data['title']}_merge_{video}_{audio}{t}.{ext}"
+
+                    if Path(f'{self.data["dir"]}/{merge_name}').exists():
+                        print("File exists skip Download!")
+                    else:
+                        for i in self.data["threading"]:
+                            self.data["target"] = i["target"]
+                            self.data["filename"] = i["filename"]
+                            self.data["format"] = i["ext"]
+
+                            self.download_format()
+                        del self.data["target"]
+                        merge_name = f"{self.data['title']}_merge_{video}_{audio}{self.data['substr']}.{ext}"
+
+                    self.data["format"] = ext
+                    for i in self.data["output"]:
+                        cmd.extend(["-i", f'{self.data["dir"]}/{i}'])
+
+                else:
+                    merge_name = f"{self.data['title']}_merge_{video}_{audio}.{self.data.get('format', 'mp4')}"
+                    if Path(f"{self.data['dir']}/{merge_name}").exists():
+                        print("File exists skip Download!")
+                    else:
+                        self.download_multi()
+                    for i in self.data["threading"]:
+                        cmd.extend(["-i", f'{self.data["dir"]}/{i["filename"]}'])
+
+                self.data["filename"] = merge_name
+
+                cmd.extend(
+                    [
+                        "-strict",
+                        "-2",
+                        "-acodec",
+                        "copy",
+                        "-vcodec",
+                        "copy",
+                        f"{self.data['dir']}/{merge_name}",
+                    ]
+                )
+
+                if not Path(f"{self.data['dir']}/{merge_name}").exists():
+
+                    subprocess.call(
+                        cmd,
+                        env=self.env,
+                    )
+                    if self.data.get("capture"):
+                        # if True:
+                        for i in self.data["output"]:
+                            try:
+                                os.remove(Path(f'{self.data["dir"]}/{i}'))
+                            except:
+                                pass
+                else:
+                    print("ffmpeg ok!")
+            else:
+
+                lists = self.column(self.data["extra"]["adaptive"], "", "itag")
+
+                if self.data["itag"] == "all":
+                    itags = list(lists.keys())
+                elif self.data["itag"] == "audio":
+                    itags = [i for i in lists if "audio" in lists[i]["mimeType"]]
+                elif self.data["itag"] == "video":
+                    itags = [i for i in lists if "video" in lists[i]["mimeType"]]
+                else:
+                    itags = self.data["itag"].split(",")
+
+                self.data["idxs"] = len(itags)
+                for k, v in enumerate(itags):
+                    try:
+                        info = lists[int(v)]
+                        mtype = self.match("(\w+)\/(\w+)", info["mimeType"])
+                        self.data["threading"].append(
+                            {
+                                "filename": f"{self.data['title']}_itag_{v}.{mtype[1]}",
+                                "target": info["url"],
+                                "idx": k + 1,
+                            }
+                        )
+                    except:
+                        pass
+
+                self.download_multi(self)
+
+        else:
+            show = f"[{self.data['show']}]" if self.data.get("show") else ""
+            self.data["filename"] = f"{self.data['title']}{show}.{self.data['ext']}"
+            self.data["target"] = self.data["streams"][self.data["ext"]]
+            self.data["path"] = f"{self.data['dir']}/{self.data['filename']}"
+            self.download_file()

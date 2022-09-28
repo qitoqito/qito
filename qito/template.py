@@ -46,6 +46,12 @@ class Template(common.Common):
         #     self.set(k, v)
         # for k, v in config.items():
         #     self.set(k, v)
+
+        if self.params.get("cookie"):
+            self.cookie = self.params["cookie"]
+        if self.params.get("proxy"):
+            self.proxy = self.params["proxy"]
+
         if self.get("import"):
             self.include()
         try:
@@ -53,42 +59,44 @@ class Template(common.Common):
         except:
             query = {}
 
-        if self.params.get("query"):
-            parse = {**self.params, **query}
+        try:
+            if self.params.get("query"):
+                parse = {**self.params, **query}
 
-        else:
-            try:
+            else:
+
                 self.params = {**self.params, **query}
-
                 parse = self.parse()
                 parse = {**self.params, **parse}
-            except AssertionError as e:
-                print(e)
 
-        self.data = parse
-        if self.data.get("title"):
-            self.data["title"] = self.data["title"].replace(r"，", "_")
-        if "show" in parse:
-            self.prepare_quality(parse)
-        if self.params.get("download") and not self.params.get("query"):
-            self.execute_init()
-        elif self.params.get("player") and not self.params.get("query"):
-            self.execute_init()
-        elif self.params.get("json"):
-            if self.get("jsonFilter"):
-                filter = self.jsonFilter.split("|")
-                parse = dict([k, v] for k, v in parse.items() if k not in filter)
-            print(json.dumps(parse, indent=2, ensure_ascii=False))
-        else:
-            parse["code"] = 0
-            if self.get("jsonFilter"):
-                filter = self.jsonFilter.split("|")
-                parse = dict([k, v] for k, v in parse.items() if k not in filter)
-            print(parse)
+            self.data = parse
+            if self.data.get("title"):
+                self.data["title"] = self.data["title"].replace(r"，", "_")
+            if "show" in parse:
+                self.prepare_quality(parse)
+            if self.params.get("download") and not self.params.get("query"):
+                self.execute_init()
+            elif self.params.get("player") and not self.params.get("query"):
+                self.execute_init()
+            elif self.params.get("json"):
+                if self.get("jsonFilter"):
+                    filter = self.jsonFilter.split("|")
+                    parse = dict([k, v] for k, v in parse.items() if k not in filter)
+                print(json.dumps(parse, indent=2, ensure_ascii=False))
+            else:
+                parse["code"] = 0
+                print(self.getArray("jsonFilter"))
+                if self.get("jsonFilter"):
+                    filter = self.jsonFilter.split("|")
+                    parse = dict([k, v] for k, v in parse.items() if k not in filter)
+                print(parse)
+        except AssertionError as e:
+            print(e)
 
     def compact(self):
         func = sys._getframe(1).f_code.co_name
         getLocals = sys._getframe(1).f_locals
-        params = getattr(self, f"prepare_{func}")(self.params["category"])
+        # params = getattr(self, f"prepare_{func}")(self.params["category"])
+        params = self.prepare_compact()
         inter = set(params).intersection(set(getLocals.keys()))
         return self.prepare_stream(getLocals, inter, func)

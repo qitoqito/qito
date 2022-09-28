@@ -31,7 +31,26 @@ class Main(template.Template):
 
         else:
             vid = p["parse"]
-
+        if p.get("query"):
+            url = f"https://webcast.amemv.com/webcast/room/reflow/info/?verifyFp=&type_id=0&live_id=1&room_id={vid}&sec_user_id=&app_id=1128&msToken="
+            for i in range(3):
+                html = self.curl(
+                    {
+                        "url": url,
+                        # 'from':'',
+                    }
+                )
+                if html:
+                    break
+            data = self.jsonParse(html)
+            try:
+                data = self.jsonParse(html)
+                room = self.haskey(data, "data.room")
+                title = room["title"]
+                image = room["cover"]["url_list"][0]
+                anchor = room["owner"]["nickname"]
+            except:
+                pass
         return self.compact()
 
     def parse(self):
@@ -58,14 +77,16 @@ class Main(template.Template):
         # # print(json)
         # print(self.haskey(json,'app.initialState.roomStore.roomInfo.room'))
         url = f"https://webcast.amemv.com/webcast/room/reflow/info/?verifyFp=&type_id=0&live_id=1&room_id={vid}&sec_user_id=&app_id=1128&msToken="
-        html = self.curl(
-            {
-                "url": url,
-                # 'from':'',
-            }
-        )
+        for i in range(3):
+            html = self.curl(
+                {
+                    "url": url,
+                    # 'from':'',
+                }
+            )
+            if html:
+                break
         data = self.jsonParse(html)
-
         assert self.haskey(data, "data.room.status") == 2, "close"
         room = self.haskey(data, "data.room")
         title = room["title"]

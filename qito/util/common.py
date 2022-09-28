@@ -496,3 +496,32 @@ class Common(execute.Execute, prepare.Prepare):
             return type == extra
         else:
             return type
+
+    def seconds(self, tm):
+        spl = tm.split(":")
+        count = len(spl)
+        if count == 1:
+            dur = int(tm)
+
+        else:
+            if count == 2:
+                spl.insert(0, 0)
+            try:
+                duration = int(spl[0]) * 3600 + int(spl[1]) * 60 + int(spl[2])
+            except:
+                duration = int(spl[0]) * 3600 + int(spl[1]) * 60 + float(spl[2])
+
+        return duration
+
+    def unique(self, array):
+        return list(set(array))
+
+    def getArray(self, name):
+        value = self.get(name)
+        if value:
+            if isinstance(value, list):
+                return value
+            else:
+                return value.split("|")
+        else:
+            return []
