@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 @File    : __main__.py
-@Time    : 2022/9/10 下午1:39  
+@Time    : 2022/9/10 下午1:39
 """
 from argparse import ArgumentParser
 
@@ -188,6 +188,8 @@ def cmd():
         "-itag", "--itag", default=False, help="Youtube itag, 137[,value]"
     )
     extra_grp.add_argument("-ccode", "--ccode", default=False, help="Youku ccode")
+    extra_grp.add_argument("-ip", "--iniPath", default=False, help="Config iniPath")
+    extra_grp.add_argument("-fp", "--filePath", default=False, help="Config filePath")
     extra_grp.add_argument(
         "-pwd", "--password", default=False, help="Encryption password for video"
     )

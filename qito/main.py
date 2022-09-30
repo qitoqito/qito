@@ -39,6 +39,21 @@ class Parse(common.Common):
             else:
                 print("Exists: config.py already exists")
 
+            from config import config
+
+            if params.get("iniPath"):
+                config.iniPath = params["iniPath"]
+            if params.get("filePath"):
+                config.filePath = params["filePath"]
+
+            content = "\n".join(
+                [
+                    f'{i}="{getattr(config, i, None)}"'
+                    for i in [e for e in dir(config) if not e.startswith("_")]
+                ]
+            )
+            self.write(f"{self.abspath}/config/config.py", content)
+
         elif params["parse"] == "ini":
             pass
         elif params.get("playlist"):

@@ -11,15 +11,7 @@ from setuptools import setup
 import os, codecs, platform
 from qito.config.profile import version
 
-REQ = [
-    "requests",
-    "pycryptodome",
-    "pysocks",
-    "pyexecjs",
-    "coloredlogs",
-    "cloudscraper",
-    "demjson",
-]
+REQ = ["requests", "pysocks", "coloredlogs", "pyexecjs"]
 
 
 def find_packages(*tops):
@@ -46,8 +38,8 @@ setup(
     long_description="""基于Python,视频、音乐、直播下载器,支持YouKu、QQ、Iqiyi等""",
     classifiers=["License :: OSI Approved :: MIT License"],
     platforms="any",
-    requires=[],
-    install_requires=[],
+    requires=REQ,
+    install_requires=REQ,
     entry_points={
         "console_scripts": [
             "qito=qito.__main__:main",

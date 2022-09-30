@@ -5,7 +5,7 @@
 @Time    : 2021/10/19 下午4:51  
 """
 
-import re, requests, json, base64, time, hashlib, urllib, logging, os, logging, importlib, urllib3, random, quickjs
+import re, requests, json, base64, time, hashlib, urllib, logging, os, logging, importlib, urllib3, random, execjs
 
 from util import prepare, execute
 
@@ -463,17 +463,26 @@ class Common(execute.Execute, prepare.Prepare):
                 ["^try\s*\{\s*\n*\s*(\w+)", "^(\w+)\s*\n*\s*\(", "^(\w+\s*=)\s*\{"], s
             )
             if getTry:
-                e = quickjs.Function(
-                    "kk",
-                    """ 
-                    function kk() {
-                        return %s;
-                    }
+                c = execjs.compile(
                     """
-                    % s.replace(getTry, "cbData="),
+                    function kk() {
+                            return %s;
+                        }
+                        """
+                    % s.replace(getTry, "cbData=")
                 )
-
-                s = e()
+                s = c.call("kk")
+                # e = quickjs.Function(
+                #     "kk",
+                #     """
+                #     function kk() {
+                #         return %s;
+                #     }
+                #     """
+                #     % s.replace(getTry, "cbData="),
+                # )
+                #
+                # s = e()
         return s
 
     def typeOf(self, variate, extra=""):
