@@ -4,3 +4,5 @@ parse/.DS_Store
 .DS_Store
 parse/.DS_Store
 .DS_Store
+dist/
+qito.egg-info/

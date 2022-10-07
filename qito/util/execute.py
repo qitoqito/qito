@@ -26,8 +26,12 @@ class Execute:
 
     def execute_directory(self):
         self.data["dir"] = (
-            self.data.get("dir") or f"{self.cwd}/download/{self.data['type']}"
+            self.data.get("dir")
+            or self.filePath
+            or f"{self.cwd}/download/{self.data['type']}"
         )
+        if self.data["dir"].startswith("."):
+            self.data["dir"] = f'{self.cwd}{self.data["dir"][1:]}'
         if not Path(self.data["dir"]).exists():
             os.makedirs(self.data["dir"])
 
@@ -690,12 +694,13 @@ class Execute:
 
         except:
             logging.error("ffmpeg error!")
+
     def download_live(self):
         """
-            直播下载,直接使用ffmpeg录制
-            :param self:
-            :return:
-            """
+        直播下载,直接使用ffmpeg录制
+        :param self:
+        :return:
+        """
         show = f"[{self.data['show']}]" if self.data.get("show") else ""
 
         if self.data["ext"] == "hls":
@@ -753,17 +758,18 @@ class Execute:
         )
         self.cmd = cmd
         self.execute_export()
+
     def download_youtube(self):
         """
-            Youtube下载
-            全局变量itag:当以a:b形式时,a和b不允许同时为video或audio,下载后自动ffmpeg合并
-                当以a(,b(,c))形式存在时,将会下载a(b(c))分段
-                当为video或者audio时,会下载所有itag为video或者audio的分段
-                当为all时,会下载所有itag
-            不存在全局变量itag,将下载指定分辨率的mp4资源
-            :param self:
-            :return:
-            """
+        Youtube下载
+        全局变量itag:当以a:b形式时,a和b不允许同时为video或audio,下载后自动ffmpeg合并
+            当以a(,b(,c))形式存在时,将会下载a(b(c))分段
+            当为video或者audio时,会下载所有itag为video或者audio的分段
+            当为all时,会下载所有itag
+        不存在全局变量itag,将下载指定分辨率的mp4资源
+        :param self:
+        :return:
+        """
 
         if self.data.get("itag"):
             if ":" in self.data["itag"] or self.data["itag"] in ["large"]:
@@ -808,11 +814,7 @@ class Execute:
                 if self.data.get("capture"):
                     timelength = self.data.get("length")
                     start = self.seconds(self.data["start"])
-                    end = (
-                        self.seconds(self.data["end"])
-                        if self.data.get("end")
-                        else ""
-                    )
+                    end = self.seconds(self.data["end"]) if self.data.get("end") else ""
 
                     if timelength:
                         t = f"[{self.data['start']}-{timelength}]"

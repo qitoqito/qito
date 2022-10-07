@@ -71,7 +71,9 @@ class Template(common.Common):
 
             self.data = parse
             if self.data.get("title"):
-                self.data["title"] = self.data["title"].replace(r"，", "_")
+                self.data["title"] = self.replace(
+                    ["，", "\\"], ["_", ""], self.data["title"]
+                )
             if "show" in parse:
                 self.prepare_quality(parse)
             if self.params.get("download") and not self.params.get("query"):
@@ -85,7 +87,6 @@ class Template(common.Common):
                 print(json.dumps(parse, indent=2, ensure_ascii=False))
             else:
                 parse["code"] = 0
-                print(self.getArray("jsonFilter"))
                 if self.get("jsonFilter"):
                     filter = self.jsonFilter.split("|")
                     parse = dict([k, v] for k, v in parse.items() if k not in filter)

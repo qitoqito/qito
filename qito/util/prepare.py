@@ -130,6 +130,7 @@ class Prepare:
             "cid",
             "ape",
             "vid",
+            "aid",
             "language",
             "page",
             "streams",
