@@ -10,7 +10,7 @@ import template
 class Main(template.Template):
     def __init__(self):
         super().__init__()
-        self.title = "爱奇艺视频(JD)"
+        self.title = "爱奇艺视频(IQITYI)"
 
     def query(self):
         p = self.params

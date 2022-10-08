@@ -6,3 +6,4 @@ parse/.DS_Store
 .DS_Store
 dist/
 qito.egg-info/
+*.pyc
