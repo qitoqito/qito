@@ -15,6 +15,8 @@ class Main(template.Template):
     def query(self):
         p = self.params
         aid = ""
+        page = 1
+        vid = ""
         if p["parse"].startswith("av"):
             p["parse"] = "https://www.bilibili.com/video/%s" % p["parse"]
         if p["parse"].startswith("BV"):
@@ -87,12 +89,12 @@ class Main(template.Template):
             elif "video" in url:
                 aid = self.match("\/video\/av(\d+)", url)
                 page = self.match(["_(\d+).h", "\?p=(\d+)"], url) or 1
+
         if aid and not vid:
             page = int(page)
             viewUrl = "http://api.bilibili.com/view?appkey=12737ff7776f1ade&batch=1&page={}&id={}".format(
                 page, aid
             )
-
             getViewSource = self.curl(viewUrl)
 
             self.logging.debug(f"getInfo: {getViewSource} \r\n")
