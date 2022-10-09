@@ -455,6 +455,27 @@ class Common(execute.Execute, prepare.Prepare):
             string = string.replace(pattern, repl)
         return string
 
+    def sub(self, pattern, repl, string, count=0, flags=0):
+        """
+        正则替换
+        :param pattern:
+        :param repl:
+        :param string:
+        :param count:
+        :param flags:
+        :return:
+        """
+        if isinstance(pattern, list):
+            if isinstance(repl, list):
+                for i in range(len(pattern)):
+                    string = re.sub(pattern[i], repl[i], string, count=0, flags=0)
+            else:
+                for i in range(len(pattern)):
+                    string = re.sub(pattern[i], repl, string, count=0, flags=0)
+        else:
+            string = re.sub(pattern, repl, string, count=0, flags=0)
+        return string
+
     def jsonParse(self, s):
         try:
             s = json.loads(s)

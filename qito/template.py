@@ -71,14 +71,18 @@ class Template(common.Common):
 
             self.data = parse
             if self.data.get("title"):
-                self.data["title"] = self.replace(
-                    ["，", "\\"], ["_", ""], self.data["title"]
+                self.data["title"] = self.sub(
+                    "[a-zA-Z0-9’!\"#$%&'()*+,-./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^_`{|}~\s]+",
+                    "",
+                    self.data["title"],
                 )
             if "show" in parse:
                 self.prepare_quality(parse)
             if self.params.get("download") and not self.params.get("query"):
                 self.execute_init()
             elif self.params.get("player") and not self.params.get("query"):
+                self.execute_init()
+            elif self.params.get("info") and not self.params.get("query"):
                 self.execute_init()
             elif self.params.get("json"):
                 if self.get("jsonFilter"):

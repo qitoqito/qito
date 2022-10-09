@@ -18,7 +18,9 @@ class Execute:
         self.data["output"] = []
         self.data["multi"] = self.data.get("multi", 10)
         self.data["title"] = self.data.get("title") or self.data["title"]
-        if self.data.get("player"):
+        if self.data.get("info"):
+            self.execute_info()
+        elif self.data.get("player"):
             self.execute_player()
         else:
             self.execute_download()
@@ -44,7 +46,9 @@ class Execute:
             "title",
             "image",
             "vid",
-            "mid",
+            "aid",
+            "cid",
+            "uid",
             "anchor",
             "parse",
             "category",
@@ -78,6 +82,42 @@ class Execute:
             print(f'      Length:        {len(self.data["streams"]["segs"])}')
         if self.data.get("dir"):
             print(f'      Dir:           {self.data["dir"]}')
+
+    def execute_info(self):
+        print("Location:")
+        print(
+            "    - {}:{}{}".format(
+                self.data["playback"],
+                (14 - len(self.data["playback"])) * " ",
+                self.data["streams"][self.data["playback"]],
+            )
+        )
+        if (
+            len(self.data["streams"]["segs"]) == 1
+            and self.data["ext"] == self.data["playback"]
+        ):
+            pass
+        else:
+            for k, v in enumerate(self.data["streams"]["segs"]):
+                print(
+                    "      part[{}]:{}{} {}".format(
+                        (k + 1),
+                        (14 - len(f"part[{k + 1}]")) * " ",
+                        v["url"],
+                        f"[{v.get('size')}]" if v.get("size") else "",
+                    )
+                )
+        if self.data["extra"].get("adaptive"):
+            for k, v in enumerate(self.data["extra"]["adaptive"]):
+                print(
+                    "      itag[{}]:{}{} {}".format(
+                        v["itag"],
+                        (14 - len(f"part[{v['itag']}]")) * " ",
+                        v["url"],
+                        f"[{v.get('contentLength')}]" if v.get("contentLength") else "",
+                    )
+                )
+        sys.exit("\r")
 
     def execute_player(self):
         if self.data["streams"].get("segs") and len(self.data["streams"]["segs"]) == 1:
