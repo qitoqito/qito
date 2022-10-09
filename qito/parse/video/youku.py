@@ -96,7 +96,7 @@ class Main(template.Template):
 
         if not utid:
             utid = "qyiUGD8MHWkCARudQQu7gaFM"
-        ccode = p.get("ccode", "0524")
+        ccode = p.get("ccode") or "0524"
 
         params = {
             "vid": vid,
