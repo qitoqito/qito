@@ -5,7 +5,7 @@
 @File    : main.py
 @Time    : 2022/2/13 下午6:14  
 """
-import time, importlib, os, re, logging, sys
+import time, importlib, os, re, logging, sys, requests
 from pathlib import Path
 
 from util import common
@@ -53,6 +53,31 @@ class Parse(common.Common):
                 ]
             )
             self.write(f"{self.abspath}/config/config.py", content)
+        elif params["parse"] == "upgrade":
+            try:
+                file = self.abspath + "/qito-main.zip"
+                print("正在下载远程zip...")
+                r = requests.get(
+                    "https://github.com/qitoqito/qito/archive/refs/heads/main.zip"
+                )
+
+                with open(file, "wb") as f:
+                    f.write(r.content)
+                    f.close()
+
+            except:
+                pass
+            import zipfile
+            import shutil
+
+            zip = zipfile.ZipFile(file)
+            print("下载完成,即将解压...")
+            for name in zip.namelist():
+                zip.extract(name, self.abspath)
+            print("正在移动文件...")
+            shutil.copytree(
+                self.abspath + "/qito-main/qito", self.abspath, dirs_exist_ok=True
+            )
 
         elif params["parse"] == "ini":
             pass
