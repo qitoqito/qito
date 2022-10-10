@@ -16,7 +16,7 @@ class Execute:
         self.block = 12 if sys.platform in ["win32"] else 32  # 终端█显示数目
         self.data["threading"] = []  # 多线程存储
         self.data["output"] = []
-        self.data["multi"] = self.data.get("multi", 10)
+        self.data["multi"] = self.data.get("multi") or 10
         self.data["title"] = self.data.get("title") or self.data["title"]
         if self.data.get("info"):
             self.execute_info()
@@ -29,7 +29,7 @@ class Execute:
     def execute_directory(self):
         self.data["dir"] = (
             self.data.get("dir")
-            or self.filePath
+            or self.get("filePath")
             or f"{self.cwd}/download/{self.data['type']}"
         )
         if self.data["dir"].startswith("."):
@@ -256,7 +256,7 @@ class Execute:
 
     def download_segs(self):
         show = f"[{self.data['show']}]" if self.data.get("show") else ""
-        self.data["format"] = self.data.get("format", self.data["ext"])
+        self.data["format"] = self.data.get("format") or self.data["ext"]
         self.data["filename"] = f"{self.data['title']}{show}.{self.data['format']}"
         self.data["path"] = f"{self.data['dir']}/{self.data['filename']}"
 
@@ -744,12 +744,12 @@ class Execute:
         show = f"[{self.data['show']}]" if self.data.get("show") else ""
 
         if self.data["ext"] == "hls":
-            ext = self.data.get("format", "mp4")
+            ext = self.data.get("format") or "mp4"
             self.data["target"] = self.data["streams"]["m3u8"]
             self.data["filename"] = f"{self.data['title']}{show}.{ext}"
 
         else:
-            ext = self.data.get("format", self.data["ext"])
+            ext = self.data.get("format") or self.data["ext"]
             rtime = time.strftime("%Y-%m-%dT%H-%M-%S", time.localtime())
             self.data["target"] = self.data["streams"][self.data["ext"]]
             self.data["filename"] = (
