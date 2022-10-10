@@ -23,7 +23,8 @@ MAC:qito config -fp xxx路径
 ### INI配置
 
 以qq为例,配置文件名为qq.ini,存放在设定iniPath路径即可
-如需设置请求cookie,在ini设置cookie节点即可
+
+如需请求cookie,在ini设置cookie节点即可
 
 ```
 [cookie]

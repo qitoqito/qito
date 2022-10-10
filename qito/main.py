@@ -90,6 +90,13 @@ class Parse(common.Common):
                     if self.match(v[site], params["parse"]):
                         params["category"] = k
                         break
+                else:
+                    for k1, v1 in v.items():
+                        if self.match(v1, params["parse"]):
+                            type = k1
+                            params["category"] = k
+                            site = k1
+                            break
 
         else:
             site = params["type"]

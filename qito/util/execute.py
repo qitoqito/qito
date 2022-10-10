@@ -961,3 +961,124 @@ class Execute:
             self.data["target"] = self.data["streams"][self.data["ext"]]
             self.data["path"] = f"{self.data['dir']}/{self.data['filename']}"
             self.download_file()
+
+    def download_format(self):
+        """
+        视频转码或截取视频片段
+        :param self:
+        :return:
+        """
+        start = end = change = temp = ""
+        timelength = self.data.get("length")
+        self.data["format"] = self.data.get("format") or "mp4"
+        if self.data.get("start"):
+            start = self.seconds(self.data["start"])
+            end = self.seconds(self.data["end"]) if self.data.get("end") else ""
+
+            if timelength:
+                t = f"[{self.data['start']}-{timelength}]"
+            else:
+                t = (
+                    f"[{self.data['start']}x{self.data['end']}]"
+                    if end
+                    else f"[{start}]"
+                )
+            # 设置文件名
+            output = self.sub(
+                ".(\w+)$", f"{t}.{self.data['format']}", self.data["filename"]
+            )
+            self.data["output"].append(output)
+            self.data["substr"] = t
+        else:
+            output = self.sub(
+                ".(\w+)$", f".{self.data['format']}", self.data["filename"]
+            )
+
+        if not Path(f"{self.data['dir']}/{output}").exists():
+
+            if self.data.get("capture"):
+                cmd = [
+                    "ffmpeg",
+                    "-hide_banner",
+                    "-user_agent",
+                    self.data["extra"]["headers"].get("User-Agent")
+                    or self.data["extra"]["headers"].get("user-agent"),
+                    "-protocol_whitelist",
+                    "file,http,https,tls,rtp,tcp,udp,crypto,httpproxy",
+                ]
+                # M3U8内容替换
+                if self.data["playback"] == "m3u8" and self.data["extra"].get(
+                    "replace"
+                ):
+                    try:
+                        html = self.curl(
+                            {
+                                "url": self.data["target"],
+                                "headers": self.data["extra"]["headers"],
+                            }
+                        )
+
+                        html = self.replace(
+                            self.data["extra"]["replace"][0],
+                            self.data["extra"]["replace"][1],
+                            html,
+                        )
+                        temp = f"{self.data['dir']}/{int(time.time())}-{self.data['vid']}-{self.data['type']}.m3u8"
+                        with open(temp, "w") as fp:
+                            fp.write(html)
+                        fp.close()
+                        change = self.data["target"]
+                        self.data["target"] = temp
+                        cmd = [
+                            "ffmpeg",
+                            "-hide_banner",
+                            "-protocol_whitelist",
+                            "file,http,https,tls,rtp,tcp,udp,crypto,httpproxy",
+                        ]
+
+                    except:
+                        pass
+
+                else:
+                    headers = []
+                    for k, v in self.data["extra"]["headers"].items():
+                        headers.append("-headers")
+                        headers.append(f"{k}:{v}")
+
+                    cmd.extend(headers)
+
+                cmd.extend(["-i", self.data["target"]])
+
+                if self.data.get("format") == "mp4":
+                    cmd.extend(["-bsf:a", "aac_adtstoasc"])
+
+            else:
+                cmd = [
+                    "ffmpeg",
+                    "-i",
+                    f"{self.data['dir']}/{self.data['filename']}",
+                    "-strict",
+                    "-2",
+                ]
+
+            if start:
+                cmd.extend(["-ss", str(start)])
+
+                if timelength:
+                    cmd.extend(["-t", str(timelength)])
+                elif end:
+                    cmd.extend(["-to", str(end)])
+
+                cmd.extend(["-c", "copy"])
+
+            cmd.append(f"{self.data['dir']}/{output}")
+
+            print(f"\r视频转码中")
+            self.cmd = cmd
+            call = self.execute_export()
+
+            if temp:
+                os.remove(Path(temp))
+                self.data["target"] = change
+        else:
+            print(f"\r视频转码完成")

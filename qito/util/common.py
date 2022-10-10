@@ -531,7 +531,7 @@ class Common(execute.Execute, prepare.Prepare):
         spl = tm.split(":")
         count = len(spl)
         if count == 1:
-            dur = int(tm)
+            duration = int(tm)
 
         else:
             if count == 2:
