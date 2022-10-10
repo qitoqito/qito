@@ -72,7 +72,7 @@ class Template(common.Common):
             self.data = parse
             if self.data.get("title"):
                 self.data["title"] = self.sub(
-                    "[a-zA-Z0-9’!\"#$%&'()*+,-./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^_`{|}~\s]+",
+                    "[’!\"#$%&'()*+,-./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^_`{|}~\s]+",
                     "",
                     self.data["title"],
                 )
