@@ -124,7 +124,8 @@ class Execute:
             self.data["target"] = self.data["streams"]["segs"][0]["url"]
         else:
             self.data["target"] = self.data["streams"][self.data["playback"]]
-            # 播放
+        # self.data["target"] = self.data["streams"][self.data["playback"]]
+        # 播放
         if "temp" in [self.haskey(self.data, "extra.player"), self.data["player"]]:
             self.player_temp()
         elif self.data.get("itag") and ":" in self.data["itag"]:
@@ -212,15 +213,19 @@ class Execute:
             extra = self.data["extra"]
             if "Accept-Language" in extra["headers"]:
                 del extra["headers"]["Accept-Language"]
-            call.extend(
-                [
-                    '--http-header-fields="{}"'.format(
-                        ",".join(
-                            ["{}: {}".format(k, v) for k, v in extra["headers"].items()]
+            if not extra["headers"].get("remove"):
+                call.extend(
+                    [
+                        '--http-header-fields="{}"'.format(
+                            ",".join(
+                                [
+                                    "{}:{}".format(k, v)
+                                    for k, v in extra["headers"].items()
+                                ]
+                            )
                         )
-                    )
-                ]
-            )
+                    ]
+                )
 
         if self.data.get("loop"):
             call.extend(["--loop=" + self.data["loop"]])
@@ -252,6 +257,7 @@ class Execute:
         print("\r")
         print(f"PlayBack: {self.data['target']}")
         self.cmd = call
+        print(call)
         self.execute_export()
 
     def download_segs(self):

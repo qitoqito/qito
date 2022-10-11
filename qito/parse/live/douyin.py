@@ -76,7 +76,7 @@ class Main(template.Template):
         # json=self.jsonParse(self.urlParse.unquote(data))
         # # print(json)
         # print(self.haskey(json,'app.initialState.roomStore.roomInfo.room'))
-        url = f"https://webcast.amemv.com/webcast/room/reflow/info/?verifyFp=&type_id=0&live_id=1&room_id={vid}&sec_user_id=&app_id=1128&msToken="
+        url = f"https://webcast.amemv.com/webcast/room/reflow/info/?verifyFp=&type_id=0&live_id=1&room_id={vid}&sec_user_id=&app_id=1128&msToken=yMsIx7vWwDBG84R8-&X-Bogus=DFSzKIVOZriANtK4SQY19BjIVUIJ"
         for i in range(3):
             html = self.curl(
                 {
@@ -104,4 +104,5 @@ class Main(template.Template):
         m3u8 = stream["hls_pull_url_map"][resolution]
         ext = "flv"
         playback = "m3u8"
+        extra = {"headers": {"remove": 1}}
         return self.compact()
