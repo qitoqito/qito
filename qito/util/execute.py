@@ -257,7 +257,6 @@ class Execute:
         print("\r")
         print(f"PlayBack: {self.data['target']}")
         self.cmd = call
-        print(call)
         self.execute_export()
 
     def download_segs(self):

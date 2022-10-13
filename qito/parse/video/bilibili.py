@@ -16,7 +16,7 @@ class Main(template.Template):
         p = self.params
         aid = ""
         page = 1
-        vid = ""
+
         if p["parse"].startswith("av"):
             p["parse"] = "https://www.bilibili.com/video/%s" % p["parse"]
         if p["parse"].startswith("BV"):
@@ -89,6 +89,9 @@ class Main(template.Template):
             elif "video" in url:
                 aid = self.match("\/video\/av(\d+)", url)
                 page = self.match(["_(\d+).h", "\?p=(\d+)"], url) or 1
+
+        else:
+            vid = p["parse"]
 
         if aid and not vid:
             page = int(page)
