@@ -88,7 +88,7 @@ class Main(template.Template):
 
             elif "video" in url:
                 aid = self.match("\/video\/av(\d+)", url)
-                page = self.match(["_(\d+).h", "\?p=(\d+)"], url) or 1 
+                page = self.match(["_(\d+).h", "\?p=(\d+)"], url) or 1
 
         else:
             vid = p["parse"]

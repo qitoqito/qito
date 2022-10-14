@@ -171,6 +171,10 @@ class Common(execute.Execute, prepare.Prepare):
         elif response == "response":
             html = {}
             c = module(params["url"], **args)
+            if params.get("decoding"):
+                c.decoding = params["decoding"]
+            elif params.get("encoding"):
+                c.encoding = params["encoding"]
             if params.get("nobody"):
                 html["content"] = ""
             else:
@@ -197,7 +201,10 @@ class Common(execute.Execute, prepare.Prepare):
             return html
         else:
             c = module(params["url"], **args)
-
+            if params.get("decoding"):
+                c.decoding = params["decoding"]
+            elif params.get("encoding"):
+                c.encoding = params["encoding"]
             if response == "json":
                 return c.json()
             else:
@@ -555,3 +562,14 @@ class Common(execute.Execute, prepare.Prepare):
                 return value.split("|")
         else:
             return []
+
+    def b64encode(self, s):
+        if not isinstance(s, bytes):
+            s = s.encode()
+        return bytearray(base64.b64encode(s)).decode()
+
+    def b64decode(self, s, ignore=1):
+        str = base64.b64decode(s)
+        if ignore and isinstance(str, bytes):
+            str = str.decode("utf-8", "ignore")
+        return str
