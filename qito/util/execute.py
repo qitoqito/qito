@@ -30,7 +30,7 @@ class Execute:
         self.data["dir"] = (
             self.data.get("dir")
             or self.get("filePath")
-            or f"{self.cwd}/download/{self.data['type']}"
+            or f"{self.cwd}/download/{self.data['category']}/{self.data['type']}"
         )
         if self.data["dir"].startswith("."):
             self.data["dir"] = f'{self.cwd}{self.data["dir"][1:]}'
