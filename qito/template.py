@@ -52,7 +52,7 @@ class Template(common.Common):
         if self.params.get("proxy"):
             self.proxy = self.params["proxy"]
 
-        if self.get("import"):
+        if self.get("require"):
             self.include()
         try:
             query = self.query()
