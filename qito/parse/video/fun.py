@@ -94,7 +94,10 @@ class Main(template.Template):
         show = lists["name"]
         self.mozecname = self.getMoz(vid)
         self.logging.debug("mozecname: %s \r\n" % self.dumps(self.mozecname))
-        playinfo = self.decodeJs(lists["playinfo"][0])
+        try:
+            playinfo = self.decodeJs(lists["playinfo"][0])
+        except:
+            playinfo = self.decodePy(lists["playinfo"][0])
         assert isinstance(playinfo, dict), "javascript"
         size = int(lists["playinfo"][0]["filesize"])
         mp4 = "http://jobsfe.funshion.com/play/v1/mp4/{}.mp4?token={}&vf={}".format(
@@ -395,3 +398,74 @@ class Main(template.Template):
 
         ctx = self.modules["execjs"].compile(js)
         return ctx.call("fun", obj, self.mozecname)
+
+    def decodePy(self, obj):
+        import binascii
+
+        self.coeff = [0, 0, 0, 0]
+        for i in self.mozecname:
+            idx = int(i[-1])
+            val = int(i[:-1], 16)
+            self.coeff[idx] = val
+
+        def d(t):
+            e = 0
+            o = 0
+            n = 0
+            while not e and 2 > n:
+                e = i(t["infohash"])
+                a = 0
+                if 41 == len(e) and not self.match("([^\w+])", e):
+                    for r in range(40):
+                        a += int(e[r], 16)
+                    d = 15 & a
+                    f = hex(d)
+                    if f[2:].upper() == e[40]:
+                        o = {"hashid": e[0:40], "token": i(t["token"])}
+                e = ""
+                t["infohash"] = t["infohash_prev"]
+                t["token"] = t["token_prev"]
+                if not o:
+                    o = t["token"]
+                n += 1
+            return o
+
+        def i(t):
+            length = len(t)
+            if length == 28 and t[-1] == "0":
+                i = t[0:27] + "="
+                n = e(i)
+                a = o(n)
+                # f = r(a)
+                f = binascii.hexlify(a.encode("utf8")).upper()
+            else:
+                i = t[2:length]
+                n = e(i)
+                f = o(n)
+            return f
+
+        def e(t):
+            return self.b64decode(t, 0)
+
+        def o(t):
+            length = len(t)
+            e = ""
+            i = 0
+            while i < length - 1:
+                o = t[i]
+                r = t[i + 1]
+                i += 2
+                hh = n(o, r)
+                e += chr(hh[0])
+                e += chr(hh[1])
+                if i == length - 1:
+                    e += chr(t[i])
+
+            return e
+
+        def n(t, e):
+            z1 = (t * self.coeff[0] + e * self.coeff[2]) % 256
+            z2 = (t * self.coeff[1] + e * self.coeff[3]) % 256
+            return z1, z2
+
+        return d(obj)
