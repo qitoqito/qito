@@ -114,9 +114,10 @@ class Main(template.Template):
         html = self.curl({"url": url, "useragent": "ios", "encoding": "utf-8"})
         ary = self.matchAll('src\s*=\s*"(\/[^.]+.js)"', html)
         ecname = []
-        for i in ary:
-            source = self.curl(f"http://m.fun.tv{i}")
-            js = """ 
+        try:
+            for i in ary:
+                source = self.curl(f"http://m.fun.tv{i}")
+                js = """ 
                              var mozEcName = [];
                              var e= %(workflow)s ;
                              var f = e.match(/eval\((.*)\)/)[1], h = /document\.mozEcName\.push\(\"(\w+)\"\)/g, g, j, k =  0 ;
@@ -130,11 +131,19 @@ class Main(template.Template):
                                  return mozEcName 
                             } 
                             """ % {
-                "workflow": repr(source)
-            }
+                    "workflow": repr(source)
+                }
 
-            ctx = self.modules["execjs"].compile(js)
-            ecname.extend(ctx.call("moz"))
+                ctx = self.modules["execjs"].compile(js)
+                ecname.extend(ctx.call("moz"))
+        except:
+            moz = ""
+            for i in ary:
+                source = self.curl(f"http://m.fun.tv{i}")
+                encrypted = self.match("\}\((.*)\)", source)
+
+                moz += eval("self.js2unpack(" + encrypted)
+            ecname = self.matchAll('document.mozEcName.push\("(\w+)"\)', moz)
         return ecname
 
     def decodeJs(self, obj):
@@ -469,3 +478,75 @@ class Main(template.Template):
             return z1, z2
 
         return d(obj)
+
+    def js2unpack(self, p, a, c, k, e=None, d=None):
+        import re
+
+        # https://stackoverflow.com/questions/2753878/how-to-evaluate-javascript-code-in-python
+        # 还原 JavaScript eval
+        while c:
+            c -= 1
+            if k[c]:
+                p = re.sub("\\b" + self.baseN(c, a) + "\\b", k[c], p)
+        return p
+
+    def baseN(self, x, base):
+        digs = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        if x < 0:
+            sign = -1
+        elif x == 0:
+            return digs[0]
+        else:
+            sign = 1
+
+        x *= sign
+        digits = []
+        while x:
+            digits.append(digs[int(x % base)])
+            x = int(x / base)
+
+        if sign < 0:
+            digits.append("-")
+
+        digits.reverse()
+
+        return "".join(digits)
+
+    def decode_packed_codes(self, code):
+        import re
+
+        def encode_base_n(num, n, table=None):
+            FULL_TABLE = (
+                "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            )
+            if not table:
+                table = FULL_TABLE[:n]
+
+            if n > len(table):
+                raise ValueError("base %d exceeds table length %d" % (n, len(table)))
+
+            if num == 0:
+                return table[0]
+
+            ret = ""
+            while num:
+                ret = table[num % n] + ret
+                num = num // n
+            return ret
+
+        pattern = r"}\('(.+)',(\d+),(\d+),'([^']+)'\.split\('\|'\)"
+        mobj = re.search(pattern, code)
+        obfucasted_code, base, count, symbols = mobj.groups()
+        base = int(base)
+        count = int(count)
+        symbols = symbols.split("|")
+        symbol_table = {}
+
+        while count:
+            count -= 1
+            base_n_count = encode_base_n(count, base)
+            symbol_table[base_n_count] = symbols[count] or base_n_count
+
+        return re.sub(
+            r"\b(\w+)\b", lambda mobj: symbol_table[mobj.group(0)], obfucasted_code
+        )
