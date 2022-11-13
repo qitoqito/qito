@@ -32,8 +32,24 @@ class Execute:
             or self.get("filePath")
             or f"{self.cwd}/download/{self.data['category']}/{self.data['type']}"
         )
+        # if self.data.get("dir"):
+        #     self.data["dir"] = self.data["dir"]
+        # elif self.get("filePath"):
+        #     self.data["dir"] = self.filePath
+        # else:
+        #     self.data[
+        #         "dir"
+        #     ] = f"{self.cwd}/download/{self.data['category']}/{self.data['type']}"
+
         if self.data["dir"].startswith("."):
             self.data["dir"] = f'{self.cwd}{self.data["dir"][1:]}'
+
+        folder = [z for z in self.data["dir"].split("/") if z]
+        for s in folder:
+            if s in ["%category", "%type", "%vid", "%title"] and s[1:] in self.data:
+                self.data["dir"] = self.data["dir"].replace(s, self.data[s[1:]])
+            elif s[0] == "%":
+                self.data["dir"] = self.data["dir"].replace(s, time.strftime(s))
         if not Path(self.data["dir"]).exists():
             os.makedirs(self.data["dir"])
 
@@ -80,8 +96,11 @@ class Execute:
 
         if self.data["streams"].get("segs"):
             print(f'      Length:        {len(self.data["streams"]["segs"])}')
+        if self.get("iniPath"):
+            print(f'      Ini:           {self.iniPath}/{self.data["type"]}.ini')
         if self.data.get("dir"):
             print(f'      Dir:           {self.data["dir"]}')
+
 
     def execute_info(self):
         print("Location:")

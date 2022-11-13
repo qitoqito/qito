@@ -414,7 +414,11 @@ class Common(execute.Execute, prepare.Prepare):
                 else:
                     dict["cookies"] = [dict["cookie"]]
             for k, v in dict.items():
-                self.set(k, v)
+                if k == "ENV":
+                    for kk, vv in v.items():
+                        self.set(kk,vv)
+                else:
+                    self.set(k, v)
             return dict
         except:
             return {}
