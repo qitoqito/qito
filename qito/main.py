@@ -56,7 +56,9 @@ class Parse(common.Common):
         elif params["parse"] == "upgrade":
             try:
                 file = self.abspath + "/qito-main.zip"
-                print("正在下载远程zip...")
+                print(
+                    "Downloading github package [https://github.com/qitoqito/qito/archive/refs/heads/main.zip]..."
+                )
                 r = requests.get(
                     "https://github.com/qitoqito/qito/archive/refs/heads/main.zip"
                 )
@@ -67,17 +69,30 @@ class Parse(common.Common):
 
             except:
                 pass
-            import zipfile
-            import shutil
 
-            zip = zipfile.ZipFile(file)
-            print("下载完成,即将解压...")
-            for name in zip.namelist():
-                zip.extract(name, self.abspath)
-            print("正在移动文件...")
-            shutil.copytree(
-                self.abspath + "/qito-main/qito", self.abspath, dirs_exist_ok=True
-            )
+            if os.path.exists(file):
+                import zipfile
+                import shutil
+
+                zip = zipfile.ZipFile(file)
+                print("The zip download is complete and will be unzipped soon...")
+                for name in zip.namelist():
+                    zip.extract(name, self.abspath)
+
+                print("Moving files ...")
+                if sys.version_info < (3, 8):
+                    shutil.copytree(
+                        self.abspath + "/qito-main/qito",
+                        self.abspath,
+                    )
+                else:
+                    shutil.copytree(
+                        self.abspath + "/qito-main/qito",
+                        self.abspath,
+                        dirs_exist_ok=True,
+                    )
+            else:
+                print("Download failed...")
 
         elif params["parse"] == "ini":
             pass
@@ -139,8 +154,11 @@ class Parse(common.Common):
             a = imp.Main()
 
             a.init(params)
+        except ModuleNotFoundError as e:
+            print(f"暂未支持{params['site']}类型解析")
         except ValueError as e:
             print(e)
+
         except KeyboardInterrupt:
             # ctrl + c 终止运行
             print("\r\n")
