@@ -47,7 +47,6 @@ class Main(template.Template):
         duration = json["body"]["content"]["duration"]
         title = json["body"]["content"]["contName"]
         pay = "1" if json["body"]["urlInfos"][0]["urlType"] == "trial" else ""
- 
         urlInfos = self.column(json["body"]["urlInfos"], "", "rateDesc")
         assert len(urlInfos) > 0, "lists"
         quality = list(urlInfos.keys())[::-1]
@@ -62,7 +61,6 @@ class Main(template.Template):
     def getSign(self, contId):
         tm = self.timestamp
         md5string = self.md5(f"{tm}{contId}{self.appVersion[:8]}")
-
         sign = self.md5(
             f"{md5string}9100fcd3470f4c0f88b403f12eaaf65amigu{self.salt[:4]}"
         )
