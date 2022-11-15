@@ -47,7 +47,7 @@ class Main(template.Template):
         duration = json["body"]["content"]["duration"]
         title = json["body"]["content"]["contName"]
         pay = "1" if json["body"]["urlInfos"][0]["urlType"] == "trial" else ""
-        print(json["body"])
+ 
         urlInfos = self.column(json["body"]["urlInfos"], "", "rateDesc")
         assert len(urlInfos) > 0, "lists"
         quality = list(urlInfos.keys())[::-1]
