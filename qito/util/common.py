@@ -148,6 +148,12 @@ class Common(execute.Execute, prepare.Prepare):
             timeout=params.get("timeout", 3000),
             params=params.get("params"),
         )
+        if self.get("debug"):
+            self.logging.debug(f"getUrl: {params['url']}")
+            if data:
+                self.logging.debug(f"reqData: ${self.dumps(data)}")
+            if json:
+                self.logging.debug(f"reqJson: ${self.dumps(json)}")
         if data:
             args["data"] = data
         elif json:
@@ -416,7 +422,7 @@ class Common(execute.Execute, prepare.Prepare):
             for k, v in dict.items():
                 if k == "ENV":
                     for kk, vv in v.items():
-                        self.set(kk,vv)
+                        self.set(kk, vv)
                 else:
                     self.set(k, v)
             return dict
