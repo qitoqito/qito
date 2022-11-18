@@ -29,7 +29,7 @@ class Prepare:
                 "douyin": ["webcast.amemv.com\/", "live.douyin.com"],
                 "douyu": ["www.douyu.com\/(\d+)", "(douyu.com\/topic)"],
                 "bilibili": ["(live.bilibili)"],
-                "cctv": ["(cctv.com\/live)"],
+                "cntv": ["(cctv.com\/live)"],
                 "longzhu": ["(?<!v.)longzhu.com\/(\w+)"],
                 "laifeng": ["(v.laifeng.com)"],
                 "huya": ["(www.huya.com)"],
