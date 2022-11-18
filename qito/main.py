@@ -155,7 +155,7 @@ class Parse(common.Common):
 
             a.init(params)
         except ModuleNotFoundError as e:
-            print(f'The parsing of {params["site"]} is not supported...')
+            print(f'The parsing of {params["category"]}.{params["site"]} is not supported...')
         except ValueError as e:
             print(e)
 
