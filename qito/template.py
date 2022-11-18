@@ -29,7 +29,8 @@ class Template(common.Common):
         # 处理proxy代理模块
         if params.get("proxy"):
             self.proxy = params["proxy"]
-
+        if params.get("debug"):
+            self.debug = 1
         self.run()
 
     def run(self):
@@ -96,6 +97,8 @@ class Template(common.Common):
                     parse = dict([k, v] for k, v in parse.items() if k not in filter)
                 print(parse)
         except AssertionError as e:
+            print(e)
+        except NotImplementedError as e:
             print(e)
 
     def compact(self):
