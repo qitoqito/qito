@@ -93,6 +93,7 @@ class Main(template.Template):
         title = room["title"]
         image = room["cover"]["url_list"][0]
         anchor = room["owner"]["nickname"]
+        stream = ""
 
         if "fifa_skin" in self.haskey(room, "background.uri") and self.haskey(
             room, "episode_extra.match_room_info.match_data.match_id"
@@ -110,77 +111,42 @@ class Main(template.Template):
             for k, v in data.items():
                 a = self.jsonParse(v)
                 if self.haskey(a, "roomRes"):
-                    room = self.haskey(a, "roomRes.newRoomInfo.room")
-                    stream = room["stream_url"]
+                    room2 = self.haskey(a, "roomRes.newRoomInfo.room")
+                    stream = room2["stream_url"]
 
-                    try:
-                        streamData = self.loads(
-                            stream["live_core_sdk_data"]["pull_data"]["stream_data"]
-                        )["data"]
-                        qualitys = list(streamData.keys())
-                        qualitys.sort(
-                            key=["md", "ld", "sd", "hd", "uhd", "origin"].index
-                        )
-                        show1 = self.data(qualitys, p["hd"])
-                        dict = {
-                            "md": "清晰",
-                            "ld": "标清",
-                            "sd": "高清",
-                            "hd": "超清",
-                            "uhd": "蓝光",
-                            "origin": "原画",
-                        }
-                        quality = [dict[i] for i in qualitys]
-                        show = dict[show1]
-                        main = streamData[show1]["main"]
-                        flv = main["flv"]
-                        m3u8 = main["hls"]
-                    except:
-                        resolution_name = stream["resolution_name"]
-                        flvUrl = stream["flv_pull_url"]
-                        qualitys = list(flvUrl.keys())[::-1]
-                        qualitys.sort(
-                            key=["SD1", "SD2", "HD1", "FULL_HD1", "ORIGION"].index
-                        )
-                        quality = [resolution_name[i] for i in qualitys]
-                        show = self.data(quality, p["hd"])
-                        resolution = self.data(qualitys, p["hd"])
-                        flv = flvUrl[resolution]
-                        m3u8 = stream["hls_pull_url_map"][resolution]
-
-        else:
+        if not stream:
             stream = room["stream_url"]
 
-            try:
-                streamData = self.loads(
-                    stream["live_core_sdk_data"]["pull_data"]["stream_data"]
-                )["data"]
-                qualitys = list(streamData.keys())
-                qualitys.sort(key=["md", "ld", "sd", "hd", "uhd", "origin"].index)
-                show1 = self.data(qualitys, p["hd"])
-                dict = {
-                    "md": "清晰",
-                    "ld": "标清",
-                    "sd": "高清",
-                    "hd": "超清",
-                    "uhd": "蓝光",
-                    "origin": "原画",
-                }
-                quality = [dict[i] for i in qualitys]
-                show = dict[show1]
-                main = streamData[show1]["main"]
-                flv = main["flv"]
-                m3u8 = main["hls"]
-            except:
-                resolution_name = stream["resolution_name"]
-                flvUrl = stream["flv_pull_url"]
-                qualitys = list(flvUrl.keys())[::-1]
-                qualitys.sort(key=["SD1", "SD2", "HD1", "FULL_HD1", "ORIGION"].index)
-                quality = [resolution_name[i] for i in qualitys]
-                show = self.data(quality, p["hd"])
-                resolution = self.data(qualitys, p["hd"])
-                flv = flvUrl[resolution]
-                m3u8 = stream["hls_pull_url_map"][resolution]
+        try:
+            streamData = self.loads(
+                stream["live_core_sdk_data"]["pull_data"]["stream_data"]
+            )["data"]
+            qualitys = list(streamData.keys())
+            qualitys.sort(key=["md", "ld", "sd", "hd", "uhd", "origin"].index)
+            show1 = self.data(qualitys, p["hd"])
+            dict = {
+                "md": "清晰",
+                "ld": "标清",
+                "sd": "高清",
+                "hd": "超清",
+                "uhd": "蓝光",
+                "origin": "原画",
+            }
+            quality = [dict[i] for i in qualitys]
+            show = dict[show1]
+            main = streamData[show1]["main"]
+            flv = main["flv"]
+            m3u8 = main["hls"]
+        except:
+            resolution_name = stream["resolution_name"]
+            flvUrl = stream["flv_pull_url"]
+            qualitys = list(flvUrl.keys())[::-1]
+            qualitys.sort(key=["SD1", "SD2", "HD1", "FULL_HD1", "ORIGION"].index)
+            quality = [resolution_name[i] for i in qualitys]
+            show = self.data(quality, p["hd"])
+            resolution = self.data(qualitys, p["hd"])
+            flv = flvUrl[resolution]
+            m3u8 = stream["hls_pull_url_map"][resolution]
 
         ext = "flv"
         playback = "m3u8"
