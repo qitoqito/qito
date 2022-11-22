@@ -4,12 +4,20 @@ qito: 基于python3编写的视频解析器
 
 ---
 
-## 如何安装
+## 安装使用
 
 ```
 pip3 install qito
 ```
+## 在线升级
 
+```
+qito upgrade
+```
+## 源升级
+```
+pip3 install --upgrade qito
+```
 ### 全局配置
 
 ```
@@ -18,6 +26,7 @@ MAC:qito config -ip xxx路径
 
 filePath: 自定义文件下载路径, 默认为cwd路径/download
 MAC:qito config -fp xxx路径
+
 ```
 
 ### INI配置
