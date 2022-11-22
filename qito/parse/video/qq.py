@@ -5,9 +5,6 @@
 @Time    : 2022/9/3 上午7:24
 """
 import template
-from Crypto.Cipher import AES
-from binascii import hexlify, unhexlify
-import time
 
 
 class Main(template.Template):
@@ -153,6 +150,7 @@ class Main(template.Template):
 
         self.logging.debug(f"getVideoInfo: {onlyInfo} \r\n")
         data = self.jsonParse(onlyInfo)
+
         ip = data["ip"]
         m3u8 = ""
         assert "msg" not in data, data["msg"]
@@ -160,6 +158,7 @@ class Main(template.Template):
             vid = data["vl"]["vi"][0]["lnk"]
             cKey = self.ckey8(vid, platform, appver, guid, timestamp)
         # 判断其是否是会员vip
+
         drm = data["vl"]["vi"][0]["drm"]
         fvkey = data["vl"]["vi"][0]["fvkey"]
         vu = data["vl"]["vi"][0]["ul"]["ui"][0]["url"]
@@ -363,7 +362,7 @@ class Main(template.Template):
                 "flowid": flowid,
                 "appver": appver,
                 "encryptVer": encryptVer,
-                "cKey": bytes.decode(cKey),
+                "cKey": cKey,
             },
         }
         return self.compact()
@@ -378,19 +377,54 @@ class Main(template.Template):
             loc4 &= loc4
             i = i + 1
         loc5 = f"|{loc4}{loc3}"
-        # pack H*
-        key = unhexlify("4f6bdaa39e2f8cb07f5e722d9edef314")
-        iv = unhexlify("01504af356e619cf2e42bba68c3f70f9")
-        cipher = AES.new(key, AES.MODE_CBC, iv)
-        # 填充
-        text_length = len(loc5)
-        to_pad = AES.block_size - (text_length % AES.block_size)
-        if to_pad == 0:
-            to_pad = AES.block_size
-        pad = chr(to_pad)
-        enc = loc5 + pad * to_pad
-        plaintext = cipher.encrypt(enc.encode("utf-8"))
-        return hexlify(plaintext).upper()
+        key = "4f6bdaa39e2f8cb07f5e722d9edef314"
+        iv = "01504af356e619cf2e42bba68c3f70f9"
+        try:
+            from Crypto.Cipher import AES
+            from Crypto.Util.Padding import pad
+
+            output = bytes.hex(
+                AES.new(bytes.fromhex(key), AES.MODE_CBC, bytes.fromhex(iv)).encrypt(
+                    pad(loc5.encode("utf-8"), 16)
+                )
+            ).upper()
+
+        except:
+            js = self.read(self.abspath + "/tool/javascript/aes.js")
+            js += """
+                        function encrypt(str,key,iv) {
+                            var key = CryptoJS.enc.Hex.parse(key);
+                            var iv = CryptoJS.enc.Hex.parse(iv); 
+                            return CryptoJS.AES.encrypt(
+                                str, key, {
+                                    iv: iv,
+                                    mode: CryptoJS.mode.CBC,
+                                    padding: CryptoJS.pad.Pkcs7
+                                }).ciphertext.toString().toUpperCase();
+                        }  
+                          """
+            try:
+                from quickjs import Function
+
+                f = Function("encrypt", js)
+                output = f(
+                    loc5,
+                    key,
+                    iv,
+                )
+
+            except:
+                import execjs
+
+                ctx = execjs.compile(js)
+                output = ctx.call(
+                    "encrypt",
+                    loc5,
+                    key,
+                    iv,
+                )
+
+        return output
 
     def intval32(self, val):
         maxint = 2147483647
