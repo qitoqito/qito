@@ -11,10 +11,15 @@ class Main(template.Template):
     def __init__(self):
         super().__init__()
         self.title = "腾讯视频(QQ)"
+        self.require = [
+            "pyaes",
+            "quickjs",
+            ("Crypto.Util.Padding", ("pad", "unpad")),
+            ("Crypto.Cipher", "AES"),
+        ]
 
     def query(self):
         p = self.params
-
         if self.hasurl(p["parse"]):
             vid = self.match(
                 ["vid=(\w+)", "/(\w+)$", "cover\/\w+\/(\w+)"],
@@ -380,15 +385,27 @@ class Main(template.Template):
         key = "4f6bdaa39e2f8cb07f5e722d9edef314"
         iv = "01504af356e619cf2e42bba68c3f70f9"
         try:
-            from Crypto.Cipher import AES
-            from Crypto.Util.Padding import pad
-
-            output = bytes.hex(
-                AES.new(bytes.fromhex(key), AES.MODE_CBC, bytes.fromhex(iv)).encrypt(
-                    pad(loc5.encode("utf-8"), 16)
+            if self.modules.get("pyaes"):
+                cbc = self.modules["pyaes"].AESModeOfOperationCBC(
+                    bytes.fromhex(key), bytes.fromhex(iv)
                 )
-            ).upper()
-
+                x = 16 - len(loc5) % 16
+                y = loc5.encode("utf-8") + x * chr(x).encode()
+                blocks = [y[i : i + 16] for i in range(0, len(y), 16)]
+                ciphertext = b""
+                for b in blocks:
+                    ciphertext = ciphertext + cbc.encrypt(b)
+                output = bytes.hex(ciphertext).upper()
+            else:
+                output = bytes.hex(
+                    self.modules["AES"]
+                    .new(
+                        bytes.fromhex(key),
+                        self.modules["AES"].MODE_CBC,
+                        bytes.fromhex(iv),
+                    )
+                    .encrypt(self.modules["pad"](loc5.encode("utf-8"), 16))
+                ).upper()
         except:
             js = self.read(self.abspath + "/tool/javascript/aes.js")
             js += """
