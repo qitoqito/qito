@@ -35,9 +35,28 @@ class Common(execute.Execute, prepare.Prepare):
     def include(self):
         for i in self.require:
             try:
-                self.modules[i] = importlib.import_module(f"util.{i}")
+                if type(i) == tuple:
+                    try:
+                        m = importlib.import_module(f"{i[0]}.{i[1]}")
+                        name = i[2] if len(i) == 3 else i[1]
+                        self.modules[name] = m
+                    except:
+                        m = importlib.import_module(i[0])
+
+                        if type(i[1]) in [tuple, list]:
+                            for j in i[1]:
+                                self.modules[j] = getattr(m, j)
+                        else:
+                            name = i[2] if len(i) == 3 else i[1]
+                            self.modules[name] = getattr(m, i[1])
+
+                else:
+                    self.modules[i] = importlib.import_module(f"util.{i}")
             except:
-                self.modules[i] = importlib.import_module(i)
+                try:
+                    self.modules[i] = importlib.import_module(i)
+                except:
+                    pass
 
     def haskey(self, data, key, value="", message=""):
         """
