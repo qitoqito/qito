@@ -43,7 +43,7 @@ xxx=xxxx;
 # 使用说明:
 #### 默认打印JSON (Parse)
 ```
-MAC: qito air$ qito https://www.bilibili.com/video/BV1Jx411r76d/
+MAC: qito https://www.bilibili.com/video/BV1Jx411r76d/
 {'hd': 6, 'type': 'bilibili', 'category': 'video', 'choose': False, 'playlist': False, 'iniPath': False, 'filePath': False, 'urls': ['https://www.bilibili.com/video/BV1Jx411r76d/'], 'parse': 'https://www.bilibili.com/video/BV1Jx411r76d/', 'site': 'bilibili', 'page': 1, 'aid': 9196627, 'title': '【补帧向/AMV】一花一草一世界', 'image': 'http://i0.hdslb.com/bfs/archive/f2b6833f8d732c6b624e11572b9b86afac7d9687.jpg', 'vid': 15195741, 'streams': {'flv': 'http://upos-sz-mirrorhw.bilivideo.com/upgcxcode/41/57/15195741/15195741-1-80.flv', 'segs': [{'url': 'http://upos-sz-mirrorhw.bilivideo.com/upgcxcode/41/57/15195741/15195741-1-80.flv', 'duration': 127.9, 'size': 30695642}], 'mp4': 'http://upos-sz-mirrorhw.bilivideo.com/upgcxcode/41/57/15195741/15195741-1-48.mp4'}, 'playback': 'mp4', 'extra': {'headers': {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:71.0) Gecko/20100101 Firefox/71.0', 'Referer': 'https://www.bilibili.com/video/'}, 'playback': 'flv'}, 'otype': 'video', 'quality': ['流畅 360P', '清晰 480P', '高清 720P', '高清 1080P'], 'multirates': 4, 'ext': 'flv', 'show': '高清 1080P', 'duration': 127.9, 'code': 0}
 ```
 #### -f --format : 格式转换 (FFMPEG format)
@@ -120,7 +120,7 @@ Stream:
       Show:          高清 1080P
       Multirates:    4
       Length:        1
-      Dir:           /Users/air/IPC/Project/Python/vv/qito/dw
+      Dir:           /dw
 [1 / 1] |-███████████████------------------|49%  586.04kb/s 14.49M/29.27M 
 ```
 #### -i --info : 打印信息 (Print Info)
@@ -171,7 +171,7 @@ Stream:
       Show:          高清 1080P
       Multirates:    4
       Length:        1
-      Dir:           /Users/air/IPC/Project/Github/qito/dw
+      Dir:           /dw
 
 PlayBack: http://upos-sz-mirrorhw.bilivideo.com/upgcxcode/41/57/15195741/15195741-1-80.flv
  (+) Video --vid=1 (h264 1280x720 60.000fps)
