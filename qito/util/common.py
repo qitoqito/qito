@@ -520,15 +520,18 @@ class Common(execute.Execute, prepare.Prepare):
                 ["^try\s*\{\s*\n*\s*(\w+)", "^(\w+)\s*\n*\s*\(", "^(\w+\s*=)\s*\{"], s
             )
             if getTry:
-                c = execjs.compile(
-                    """
+                try:
+                    s = json.loads(re.match(".*?({.*}).*", s, re.S).group(1))
+                except:
+                    c = execjs.compile(
+                        """
                     function kk() {
                             return %s;
                         }
                         """
-                    % s.replace(getTry, "cbData=")
-                )
-                s = c.call("kk")
+                        % s.replace(getTry, "cbData=")
+                    )
+                    s = c.call("kk")
                 # e = quickjs.Function(
                 #     "kk",
                 #     """
