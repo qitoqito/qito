@@ -17,7 +17,7 @@ class Execute:
         self.data["threading"] = []  # 多线程存储
         self.data["output"] = []
         self.data["multi"] = self.data.get("multi") or 10
-        self.data["title"] = self.data.get("title") or self.data["title"]
+        self.data["title"] = self.data.get("title") or self.data["vid"]
         if self.data.get("info"):
             self.execute_info()
         elif self.data.get("player"):
