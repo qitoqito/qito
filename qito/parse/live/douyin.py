@@ -99,21 +99,26 @@ class Main(template.Template):
                         a, "roomRes.newRoomInfo.room.episode_extra.camera_infos"
                     )
                     if camera:
-                        language = []
+                        lang = []
+                        eee=1
                         for abc in camera:
-                            language.append(
+                            lang.append(
                                 {
                                     "url": f"https://live.douyin.com/fifaworldcup/{roomId}.html",
-                                    "language": abc["stream_info"]["id_str"],
-                                    "langcode": abc["title"],
+                                    "langcode":
+                                        eee,
+                                    "language":
+                                        abc["title"],
                                 }
                             )
+                            eee+=1
                             if p.get("language") and (
                                 p["language"] == abc["title"]
-                                or p["language"] == abc["stream_info"]["id_str"]
+                                or p["language"] ==str(eee)
                             ):
                                 stream = abc["stream_info"]
-                        extra["language"] = language
+                                language=abc["title"]
+                        extra["language"] = lang
 
                     #
 
