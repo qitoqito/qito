@@ -75,7 +75,21 @@ class Execute:
                 print(
                     "{}:{}{}".format(i.capitalize(), (20 - len(i)) * " ", self.data[i])
                 )
-
+        if self.haskey(self.data, "extra.language"):
+            print("Language:")
+            num = 0
+            for i in self.data["extra"]["language"]:
+                line = "-" if num == 0 else " "
+                print(
+                    "    {} {}:{}{} [{}]".format(
+                        line,
+                        i["langcode"],
+                        (14 - len(str(i["langcode"]))) * " ",
+                        i["url"],
+                        i["language"],
+                    )
+                )
+                num += 1
         print("Stream:")
         print(f"    - Ext:           {self.data['ext']}")
         if self.data.get("playback"):
@@ -100,7 +114,6 @@ class Execute:
             print(f'      Ini:           {self.iniPath}/{self.data["type"]}.ini')
         if self.data.get("dir"):
             print(f'      Dir:           {self.data["dir"]}')
-
 
     def execute_info(self):
         print("Location:")
