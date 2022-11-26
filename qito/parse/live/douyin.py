@@ -57,31 +57,13 @@ class Main(template.Template):
         p = self.params
         assert p["vid"], "vid"
         vid = p["vid"]
+        extra = {"headers": {"remove": 1}}
 
-        # url = f"https://live.douyin.com/{vid}"
-        #
-        # html = self.curl(
-        #     {
-        #         "url": url,
-        #         "cookie": "__ac_nonce=0731e9abc003e9f166f7;  ",
-        #     }
-        # )
-        # data = self.match(
-        #     [
-        #         'id="RENDER_DATA" type="application/json">([^\<]+)</script>',
-        #         "__INIT_PROPS__\s*=\s*([^\<]+)</script>",
-        #     ],
-        #     html,
-        # )
-        # json=self.jsonParse(self.urlParse.unquote(data))
-        # # print(json)
-        # print(self.haskey(json,'app.initialState.roomStore.roomInfo.room'))
         url = f"https://webcast.amemv.com/webcast/room/reflow/info/?verifyFp=&type_id=0&live_id=1&room_id={vid}&sec_user_id=&app_id=1128&msToken=yMsIx7vWwDBG84R8-&X-Bogus=DFSzKIVOZriANtK4SQY19BjIVUIJ"
         for i in range(3):
             html = self.curl(
                 {
                     "url": url,
-                    # 'from':'',
                 }
             )
             if html:
@@ -113,6 +95,27 @@ class Main(template.Template):
                 if self.haskey(a, "roomRes"):
                     room2 = self.haskey(a, "roomRes.newRoomInfo.room")
                     stream = room2["stream_url"]
+                    camera = self.haskey(
+                        a, "roomRes.newRoomInfo.room.episode_extra.camera_infos"
+                    )
+                    if camera:
+                        language = []
+                        for abc in camera:
+                            language.append(
+                                {
+                                    "url": f"https://live.douyin.com/fifaworldcup/{roomId}.html",
+                                    "language": abc["stream_info"]["id_str"],
+                                    "langcode": abc["title"],
+                                }
+                            )
+                            if p.get("language") and (
+                                p["language"] == abc["title"]
+                                or p["language"] == abc["stream_info"]["id_str"]
+                            ):
+                                stream = abc["stream_info"]
+                        extra["language"] = language
+
+                    #
 
         if not stream:
             stream = room["stream_url"]
@@ -150,6 +153,5 @@ class Main(template.Template):
 
         ext = "flv"
         playback = "m3u8"
-        extra = {"headers": {"remove": 1}}
 
         return self.compact()
