@@ -149,10 +149,10 @@ class Main(template.Template):
         duration = json["data"]["video"]["seconds"]
         lang = []
         if self.haskey(json, "data.dvd.audiolang"):
-            language = []
+            language2 = []
             for i in json["data"]["dvd"]["audiolang"]:
 
-                language.append(
+                language2.append(
                     {
                         "url": f"https://v.youku.com/v_show/id_{i['vid']}.html",
                         "langcode": i["langcode"],
@@ -161,7 +161,7 @@ class Main(template.Template):
                 )
                 if i["langcode"] == self.params.get("language") and title:
                     title = "{}[{}]".format(title, i["lang"])
-            extra = {"language": language}
+            extra = {"language": language2}
             lang = self.column(json["data"]["dvd"]["audiolang"], "langcode")
 
         ary = [
