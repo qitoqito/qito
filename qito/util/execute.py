@@ -66,6 +66,7 @@ class Execute:
             "cid",
             "uid",
             "anchor",
+            "language",
             "parse",
             "category",
             "hd",
