@@ -23,7 +23,7 @@ def cmd():
         "-V", "--version", action="store_true", help="Print version and exit"
     )
     parser.add_argument(
-        "-c", "--cookie", default="", type=str, help="Cookie [file.txt/Netscape Cookie]"
+        "-c", "--cookie", type=str, help="Cookie [file.txt/Netscape Cookie]"
     )
     parser.add_argument(
         "-e",
@@ -32,7 +32,7 @@ def cmd():
         action="store_true",
         help="End process when parsing playlist error",
     )
-    parser.add_argument("-f", "--format", default="", help="Video format")
+    parser.add_argument("-f", "--format", help="Video format")
     parser.add_argument(
         "-i", "--info", default=False, action="store_true", help="Print all information"
     )
