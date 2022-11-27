@@ -43,8 +43,10 @@ class Execute:
 
         if self.data["dir"].startswith("."):
             self.data["dir"] = f'{self.cwd}{self.data["dir"][1:]}'
-
+        if self.data.get("serial"):
+            self.data["dir"] = f"{self.data['dir']}/{self.data['serial']}"
         folder = [z for z in self.data["dir"].split("/") if z]
+
         for s in folder:
             if s in ["%category", "%type", "%vid", "%title"] and s[1:] in self.data:
                 self.data["dir"] = self.data["dir"].replace(s, self.data[s[1:]])
