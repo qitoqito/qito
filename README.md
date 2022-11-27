@@ -188,8 +188,8 @@ AO: [coreaudio] 48000Hz stereo 2ch floatp
 | 3    | 播放列表    | -l    | --playlist    | bool    |      | 默认false,带此参数,会优先解析成剧集列表    |
 | 4    | 列表选择   | -b    | --choose    | string    | a或a,b或a:b   | ,作为分隔符时,会解析a和b集 :作为分隔符时,会解析a到b的剧集    |
 | 5    | 自定义文件名    | -n    | --name   | string   | 测试A    | 下载时的主体名称是 "测试A"    |
-| 6    | 调试    | -s    | --debug   | bool    |      | 默认false,带此参数后,终端会输出相应请求    |
-
+| 6    | 调试    | -k    | --debug   | bool    |      | 默认false,带此参数后,终端会输出相应请求    |
+| 7    | 剧集    | -s    | --serial   | string    |  贝瓦儿歌    | 有此参数时,下载时会存储在存储目录的"贝瓦儿歌"里面    | 
 
 
 
