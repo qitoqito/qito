@@ -384,7 +384,7 @@ class Execute:
                                 ]["url"]
                                 r = "\r[%s / %d] |- %s -|  " % (
                                     v["idx"],
-                                    self.data.get("idxs", 1),
+                                    self.data.get("idxs") or 1,
                                     "reloading",
                                 )
                                 print("\r{}".format(r), end="")
@@ -477,7 +477,7 @@ class Execute:
         """
         target = target or self.data.get("target")
         filename = filename or self.data.get("filename")
-        idx = idx or self.data.get("idx", 1)
+        idx = idx or self.data.get("idx") or 1
         if self.data.get("idxs"):
             n = str(idx).zfill(len(str(self.data["idxs"])))
         else:
@@ -490,7 +490,7 @@ class Execute:
         if file.exists():
             r = "\r[%s / %d] |- %s -|  " % (
                 n,
-                self.data.get("idxs", 1),
+                self.data.get("idxs") or 1,
                 "finish",
             )
             print("\r{}".format(r), end="")
@@ -525,7 +525,7 @@ class Execute:
             except:
                 r = "\r[%s / %d] |- %s -|  " % (
                     n,
-                    self.data.get("idxs", 1),
+                    self.data.get("idxs") or 1,
                     "ConnectionError",
                 )
                 print("\r{}".format(r), end="")
@@ -537,7 +537,7 @@ class Execute:
         except:
             r = "\r[%s / %d] |- %s -|  " % (
                 n,
-                self.data.get("idxs", 1),
+                self.data.get("idxs") or 1,
                 "contentLengthError",
             )
             print("\r{}".format(r), end="")
@@ -574,7 +574,7 @@ class Execute:
                         number = int(self.block * rate)
                         r = "\r[%s / %d] |-%s%s-|%d%%  %skb/s %sM/%sM " % (
                             n,
-                            self.data.get("idxs", 1),
+                            self.data.get("idxs") or 1,
                             "█" * number,
                             "-" * (self.block - number),
                             int(rate * 100),
@@ -614,7 +614,7 @@ class Execute:
         velocity = total_size / 1024 / (end - start)
         r = "\r[%s / %d] |-%s-|%d%%  %skb/s %sM/%sM " % (
             n,
-            self.data.get("idxs", 1),
+            self.data.get("idxs") or 1,
             "█" * self.block,
             100,
             "%.2f" % velocity,
@@ -684,7 +684,7 @@ class Execute:
         :return:
         """
         show = f"[{self.data['show']}]" if self.data.get("show") else ""
-        self.data["format"] = self.data.get("format", "mp4")
+        self.data["format"] = self.data.get("format") or "mp4"
         # ext = "mp4"
         self.data["filename"] = f"{self.data['title']}{show}.{self.data['format']}"
         self.data["path"] = f"{self.data['dir']}/{self.data['filename']}"
@@ -928,7 +928,7 @@ class Execute:
                         cmd.extend(["-i", f'{self.data["dir"]}/{i}'])
 
                 else:
-                    merge_name = f"{self.data['title']}_merge_{video}_{audio}.{self.data.get('format', 'mp4')}"
+                    merge_name = f"{self.data['title']}_merge_{video}_{audio}.{self.data.get('format') or 'mp4'}"
                     if Path(f"{self.data['dir']}/{merge_name}").exists():
                         print("File exists skip Download!")
                     else:
