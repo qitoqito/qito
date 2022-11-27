@@ -56,6 +56,8 @@ class Parse(common.Common):
         elif params["parse"] == "upgrade":
             try:
                 file = self.abspath + "/qito-main.zip"
+                if os.path.exists(file):
+                    os.remove(file)
                 print(
                     "Downloading github package [https://github.com/qitoqito/qito/archive/refs/heads/main.zip]..."
                 )
@@ -74,6 +76,9 @@ class Parse(common.Common):
                 import zipfile
                 import shutil
 
+                filePath = self.abspath + "/qito-main"
+                if os.path.exists(filePath):
+                    shutil.rmtree(filePath)
                 zip = zipfile.ZipFile(file)
                 print("The zip download is complete and will be unzipped soon...")
                 for name in zip.namelist():
@@ -91,6 +96,7 @@ class Parse(common.Common):
                         self.abspath,
                         dirs_exist_ok=True,
                     )
+                print("exit...")
             else:
                 print("Download failed...")
 
@@ -150,12 +156,15 @@ class Parse(common.Common):
         params["type"] = type
         try:
             imp = importlib.import_module(f"parse.{params['category']}.{type}")
+
             self.imp = imp
             a = imp.Main()
 
             a.init(params)
         except ModuleNotFoundError as e:
-            print(f'The parsing of {params["category"]}.{params["site"]} is not supported...')
+            print(
+                f'The parsing of {params["category"]}.{params["site"]} is not supported...'
+            )
         except ValueError as e:
             print(e)
 
