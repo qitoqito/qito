@@ -48,10 +48,16 @@ def cmd():
         help="Print video information only",
     )
     parser.add_argument(
+        "-s",
+        "--serial",
+        type=str,
+        help="Stored in the serial folder when downloading ",
+    )
+    parser.add_argument(
         "-r", "--hd", type=int, help="Video resolution selection [1,2, ...]"
     )
     parser.add_argument(
-        "-s", "--debug", default=False, action="store_true", help="Print  messages"
+        "-k", "--debug", default=False, action="store_true", help="Print  messages"
     )
 
     parser.add_argument("-t", "--type", help="Parsing type,Add when urls is not a URL")
@@ -175,7 +181,7 @@ def cmd():
     )
     extra_grp = parser.add_argument_group("Extra options")
     extra_grp.add_argument(
-        "-init",
+        "-in",
         "--init",
         default=False,
         help="Initial setup, backup or restore user.py",
@@ -185,16 +191,16 @@ def cmd():
     )
     # 额外
     extra_grp.add_argument(
-        "-itag", "--itag", default=False, help="Youtube itag, 137[,value]"
+        "-it", "--itag", default=False, help="Youtube itag, 137[,value]"
     )
     extra_grp.add_argument("-ccode", "--ccode", default=False, help="Youku ccode")
     extra_grp.add_argument("-ip", "--iniPath", default=False, help="Config iniPath")
     extra_grp.add_argument("-fp", "--filePath", default=False, help="Config filePath")
     extra_grp.add_argument(
-        "-pwd", "--password", default=False, help="Encryption password for video"
+        "-pw", "--password", default=False, help="Encryption password for video"
     )
     extra_grp.add_argument(
-        "-enc",
+        "-en",
         "--encoder",
         default=False,
         help="Select the video option to encode",
