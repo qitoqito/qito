@@ -5,7 +5,7 @@
 @File    : main.py
 @Time    : 2022/2/13 下午6:14  
 """
-import time, importlib, os, re, logging, sys, requests
+import time, importlib, os, re, logging, sys, requests, shutil
 from pathlib import Path
 
 from util import common
@@ -218,7 +218,9 @@ class Parse(common.Common):
                 params = {**params, **i}
             else:
                 params["parse"] = i
-
-            self.working(params)
+            try:
+                self.working(params)
+            except:
+                pass
         # except:
         #     pass
