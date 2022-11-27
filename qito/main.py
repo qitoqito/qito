@@ -220,7 +220,15 @@ class Parse(common.Common):
                 params["parse"] = i
             try:
                 self.working(params)
+
+            except KeyboardInterrupt:
+                # ctrl + c 终止运行
+                print("\r\n")
+                logging.warning("End Process")
+                sys.exit()
+
             except:
                 pass
         # except:
         #     pass
+ 
