@@ -173,6 +173,8 @@ class Execute:
             self.download_youtube()
         elif self.data["category"] == "live":
             self.download_live()
+        elif self.data["ext"]=="hls":
+            self.download_live()
         elif self.data["ext"] == "m3u8":
             self.download_m3u8()
         else:
@@ -800,8 +802,8 @@ class Execute:
         self.data["path"] = f"{self.data['dir']}/{self.data['filename']}"
 
         if Path(self.data["path"]).exists():
-            pass
-            # sys.exit("已下载")
+            print(f'Exists: {self.data["path"]}', end="")
+            return
 
         headers = []
         if self.data["extra"].get("headers"):
