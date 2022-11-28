@@ -16,6 +16,7 @@ class Parse(common.Common):
         super().__init__()
         self.abspath = os.path.abspath(os.path.dirname(__file__))
         self.cwd = os.getcwd()
+        self.exit = 0
         if params.get("debug"):
             logging.basicConfig(
                 format="%(levelname)s:%(filename)s:%(funcName)s:%(lineno)d:%(message)s",
@@ -171,6 +172,7 @@ class Parse(common.Common):
         except KeyboardInterrupt:
             # ctrl + c 终止运行
             print("\r\n")
+            self.exit = 1
             logging.warning("End Process")
             sys.exit()
 
@@ -218,17 +220,14 @@ class Parse(common.Common):
                 params = {**params, **i}
             else:
                 params["parse"] = i
-            try:
+            if self.exit:
+                sys.exit("Exit...")
+            if params.get("exit"):
                 self.working(params)
-
-            except KeyboardInterrupt:
-                # ctrl + c 终止运行
-                print("\r\n")
-                logging.warning("End Process")
-                sys.exit()
-
-            except:
-                pass
+            else:
+                try:
+                    self.working(params)
+                except:
+                    pass
         # except:
         #     pass
- 
