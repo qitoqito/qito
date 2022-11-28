@@ -55,7 +55,8 @@ class Main(template.Template):
         size = int(info["mediaSize"])
         m3u8 = info["url"]
         segs = [{"url": m3u8, "duration": duration}]
-        ext = playback = "m3u8"
+        playback = "m3u8"
+        ext="hls"
         return self.compact()
 
     def getSign(self, contId):
