@@ -173,7 +173,7 @@ class Execute:
             self.download_youtube()
         elif self.data["category"] == "live":
             self.download_live()
-        elif self.data["ext"]=="hls":
+        elif self.data["ext"] == "hls":
             self.download_live()
         elif self.data["ext"] == "m3u8":
             self.download_m3u8()
@@ -519,6 +519,9 @@ class Execute:
             response = requests.get(
                 target, stream=True, headers=headers, proxies=proxies
             )
+        except KeyboardInterrupt:
+            self.logging.warning("End Process")
+            sys.exit()
         except:
             try:
                 response = requests.get(
