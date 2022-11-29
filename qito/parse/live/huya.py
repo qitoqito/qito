@@ -21,14 +21,11 @@ class Main(template.Template):
         if p.get("query"):
             url = f"https://www.huya.com/{vid}"
             html = self.curl(url)
-            stream = self.match('"stream": ({.+?})\s*};', html)
-            self.logging.debug(f"getInfo: {stream} \r\n")
-            if stream:
-                json = self.loads(stream)
-                if json["status"] == 200:
-                    anchor = json["data"][0]["gameLiveInfo"]["nick"]
-                    title = json["data"][0]["gameLiveInfo"]["roomName"]
-                    title = json["data"][0]["gameLiveInfo"]["roomName"]
+            b64 = self.match(r"stream: ({.+)\n.*?};", html)
+            json = self.jsonParse(b64)
+            data = json["data"][0]
+            anchor = data["gameLiveInfo"]["nick"]
+            title = data["gameLiveInfo"]["introduction"]
         return self.compact()
 
     def parse(self):
