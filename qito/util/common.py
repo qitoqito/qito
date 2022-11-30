@@ -19,12 +19,11 @@ class Common(execute.Execute, prepare.Prepare):
         self.cwd = os.getcwd()
         self.time = time.time()
         self.options = {"header": {}}
-        self.modules = {}
+        self.modules = {"urlParse": urllib.parse}
         self.env = None
         self.time = int(time.time())
         self.timestamp = int(round(self.time * 1000))
         self.logging = logging
-        self.urlParse = urllib.parse
 
     def set(self, k, v):
         setattr(self, k, v)
@@ -88,11 +87,12 @@ class Common(execute.Execute, prepare.Prepare):
         """
         return link.lower().startswith("http")
 
-    def curl(self, params):
+    def curl(self, params, extra={}):
         data = ""
         json = ""
         if isinstance(params, str):
             params = {"url": params}
+        params.update(extra)
         response = params.get("response", None)
         method = params.get("method")
         module = requests.post if method == "post" else requests.get
@@ -350,10 +350,17 @@ class Common(execute.Execute, prepare.Prepare):
 
     def build(self, s, f="&", t=0):
         if t:
-            pass
+            return dict(k.split("=") for k in s.split(f))
         else:
-            a = urllib.parse.urlencode(s)
-            return a.replace(r"&", f)
+            return urllib.parse.urlencode(s).replace(r"&", f)
+
+    def sort(self, array, sort):
+        if isinstance(array, dict):
+            lists = {i: array[i] for i in sort if i in array}
+        else:
+            lists = [i for i in sort if i in array]
+
+        return lists
 
     def md5(self, string):
         m2 = hashlib.md5()
@@ -406,6 +413,9 @@ class Common(execute.Execute, prepare.Prepare):
 
     def quote(self, params):
         return urllib.parse.quote(params)
+
+    def qsl(self, params):
+        return dict(urllib.parse.parse_qsl(params))
 
     def parseIni(self, iniPath):
         try:
@@ -519,19 +529,19 @@ class Common(execute.Execute, prepare.Prepare):
             getTry = self.match(
                 ["^try\s*\{\s*\n*\s*(\w+)", "^(\w+)\s*\n*\s*\(", "^(\w+\s*=)\s*\{"], s
             )
-            if getTry:
-                try:
-                    s = json.loads(re.match(".*?({.*}).*", s, re.S).group(1))
-                except:
-                    c = execjs.compile(
-                        """
+
+            try:
+                s = json.loads(re.match(".*?({.*}).*", s, re.S).group(1))
+            except:
+                c = execjs.compile(
+                    """
                     function kk() {
                             return %s;
                         }
                         """
-                        % s.replace(getTry, "cbData=")
-                    )
-                    s = c.call("kk")
+                    % (s.replace(getTry, "cbData=") if getTry else s)
+                )
+                s = c.call("kk")
                 # e = quickjs.Function(
                 #     "kk",
                 #     """
@@ -543,6 +553,7 @@ class Common(execute.Execute, prepare.Prepare):
                 # )
                 #
                 # s = e()
+
         return s
 
     def typeOf(self, variate, extra=""):
@@ -567,19 +578,9 @@ class Common(execute.Execute, prepare.Prepare):
             return type
 
     def seconds(self, tm):
-        spl = tm.split(":")
-        count = len(spl)
-        if count == 1:
-            duration = int(tm)
-
-        else:
-            if count == 2:
-                spl.insert(0, 0)
-            try:
-                duration = int(spl[0]) * 3600 + int(spl[1]) * 60 + int(spl[2])
-            except:
-                duration = int(spl[0]) * 3600 + int(spl[1]) * 60 + float(spl[2])
-
+        duration = 0
+        for d in tm.split(":"):
+            duration = duration * 60 + int(d)
         return duration
 
     def unique(self, array):
