@@ -11,7 +11,7 @@ class Main(template.Template):
     def __init__(self):
         super().__init__()
         self.title = "斗鱼视频(DOUYU)"
-        self.require = [("quickjs", "Function", "fn"), "execjs"]
+        self.require = [("quickjs", "Function", "fn"), "execjs", "re"]
 
     def query(self):
         p = self.params
@@ -20,8 +20,11 @@ class Main(template.Template):
         else:
             aid = p["parse"]
         html = self.curl(f"https://v.douyu.com/show/{aid}")
-        data = self.match("\$DATA\s*=\s*([^<]+?);", html)
+        data = self.match("\$DATA\s*=\s*([^<]+?);\s*\<", html)
+
         self.logging.debug(f"roomData: {data} \r\n")
+        # json = self.jsonParse(self.quoteJson(data))
+
         json = self.jsonParse(data)
         if "ROOM" in json:
             title = json["ROOM"]["name"]
@@ -78,3 +81,21 @@ class Main(template.Template):
         m3u8 = video[self.data(s, p["hd"])]["url"]
         playback = ext = "m3u8"
         return self.compact()
+
+    def quoteJson(self, json_str):
+        re = self.modules["re"]
+        quote_pat = re.compile(r'"[^"]*"')
+        a = quote_pat.findall(json_str)
+        json_str = quote_pat.sub("@", json_str)
+        key_pat = re.compile(r"(\w+):")
+        json_str = key_pat.sub(r'"\1":', json_str)
+        assert json_str.count("@") == len(a)
+        count = -1
+
+        def put_back_values(match):
+            nonlocal count
+            count += 1
+            return a[count]
+
+        json_str = re.sub("@", put_back_values, json_str)
+        return json_str
