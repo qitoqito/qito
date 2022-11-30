@@ -128,5 +128,5 @@ class Main(template.Template):
                 ext = "m3u8"
                 playback = "m3u8"
             except:
-                pass 
+                pass
         return self.compact()
