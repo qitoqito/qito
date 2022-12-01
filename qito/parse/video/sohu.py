@@ -128,7 +128,9 @@ class Main(template.Template):
             for i in tuple(zip(mp4Data, durData, bt)):
                 segs.append(
                     {
-                        "url": self.replace("\d+\.\d+\.\d+\.\d+", "data.vod.itc.cn", i[0]),
+                        "url": self.replace(
+                            "\d+\.\d+\.\d+\.\d+", "data.vod.itc.cn", i[0]
+                        ),
                         "duration": i[1],
                         "size": int(i[2]),
                     }
