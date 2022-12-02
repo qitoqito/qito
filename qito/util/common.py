@@ -533,15 +533,18 @@ class Common(execute.Execute, prepare.Prepare):
             try:
                 s = json.loads(re.match(".*?({.*}).*", s, re.S).group(1))
             except:
-                c = execjs.compile(
-                    """
+                try:
+                    c = execjs.compile(
+                        """
                     function kk() {
                             return %s;
                         }
                         """
-                    % (s.replace(getTry, "cbData=") if getTry else s)
-                )
-                s = c.call("kk")
+                        % (s.replace(getTry, "cbData=") if getTry else s)
+                    )
+                    s = c.call("kk")
+                except:
+                    pass
                 # e = quickjs.Function(
                 #     "kk",
                 #     """
