@@ -191,6 +191,7 @@ class Parse(common.Common):
             params["category"] = data.get("category")
             params["type"] = data.get("type")
             params["serial"] = data.get("serial")
+
             if params.get("choose"):
                 params["choose"] = str(params["choose"])
                 if ":" in params["choose"]:
@@ -212,7 +213,7 @@ class Parse(common.Common):
                             pass
             else:
                 parseLists = data["data"]
-
+            params["total"] = len(data["data"])
         except:
             parseLists = [params["parse"]]
         for i in parseLists:
