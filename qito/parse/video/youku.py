@@ -97,14 +97,13 @@ class Main(template.Template):
         if not utid:
             utid = "qyiUGD8MHWkCARudQQu7gaFM"
         ccode = p.get("ccode") or "0524"
-
         params = {
             "vid": vid,
             "ccode": ccode,
             "client_ip": "192.168.1.1",
             "utid": utid,
             "client_ts": timestamp,
-            "ckey": "099#4a8781f72f29ab250a484c1bf330aa99#82",
+            "ckey": "100#4a8781f72f29ab250a484c1bf330aa99#82",
             "ptoken": "",
             "stoken": "",
             # "extag": "EXT-X-PRIVINF",
@@ -140,7 +139,6 @@ class Main(template.Template):
         )
         self.logging.debug(f"getVideo: {html} \r\n")
         json = self.loads(html.replace("http:", "https:"))
-
         assert "error" not in json, "data"
         # pay = json["data"].get("show").get("pay")
         pay = self.haskey(json, "data.show.pay")
@@ -180,11 +178,12 @@ class Main(template.Template):
             "mp4hd3",
             "mp4hd3v2",
         ]
-        lang = lang or ["ja", "en", "in", "kr", "yue", "guoyu", "default"]
+        lang.extend(["ja", "en", "in", "kr", "yue", "guoyu", "default"])
         langDict = {}
+
         for lk in json["data"]["stream"]:
-            if lk["audio_lang"] in langDict:
-                langDict[lk["audio_lang"]].append(lk)
+            if lk["audio_lang"] in lang:
+                langDict[lk["audio_lang"]] = lk
             else:
                 langDict[lk["audio_lang"]] = []
 
@@ -195,7 +194,6 @@ class Main(template.Template):
             if encodeid in self.dumps(vid):
                 vidStream = v
                 break
-
         # 获取 stream[lang] 数据
         if self.params.get("language") in langDict:
             stream = langDict[self.params["language"]]
@@ -208,11 +206,13 @@ class Main(template.Template):
 
         streamList = []
         quality = []
+
         for kn in ary:
             for kb in stream:
-                if kb["stream_type"] == kn:
-                    streamList.append(kb)
-                    quality.append(kb["stream_type"])
+                if kb == "stream_type" and stream[kb] == kn:
+                    streamList.append(stream)
+                    quality.append(stream["stream_type"])
+
         show = self.data(quality, p["hd"])
 
         fileDict = self.data(streamList, p["hd"])
