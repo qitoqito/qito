@@ -13,67 +13,42 @@ class Main(template.Template):
         self.title = "腾讯剧集列表"
 
     def videoList(self, params):
+        cover = ""
         if params["parse"].startswith("http"):
             cover = self.match("cover\/(\w+)", params["parse"])
+            vid = self.match(
+                ["vid=(\w+)", "/(\w+)$", "cover\/\w+\/(\w+)"],
+                params["parse"],
+            )
+            html = self.curl(params["parse"])
+            if not vid:
+                vid = self.match(
+                    [
+                        "&vid=(\w+)",
+                        "vid:\s*[\"'](\w+)",
+                        "vid\s*=\s*[\"']\s*(\w+)",
+                        '"vid":"(\w+)"',
+                    ],
+                    html,
+                )
         else:
-            cover = params["parse"]
+            vid = params["parse"]
+        if vid and not cover:
+            u = f"https://m.v.qq.com/play.html?cid=&vid={vid}&ptag=v_qq_com%23v.play.adaptor%233"
+            h = self.curl(
+                {
+                    "url": u,
+                }
+            )
+            cover = self.match(["cid%22%3A%22(\w+)", "cid\s*=\s*'(\w+)'"], h)
 
         s = self.curl(
             {
-                "url": "https://pbaccess.video.qq.com/trpc.universal_backend_service.page_server_rpc.PageServer/GetPageData?video_appid=3000010&vplatform=2",
-                "json": {
-                    "page_params": {
-                        "page_type": "detail_operation",
-                        "page_id": "vsite_episode_list",
-                        "id_type": "1",
-                        "page_size": "50",
-                        "cid": cover,
-                        "vid": "",
-                        "lid": "0",
-                        "req_from": "web_mobile",
-                        "page_context": "",
-                    }
-                },
-                "cookie": {
-                    "sd_cookie_crttime": "165235985518",
-                    "vversion_name": "8.2.95",
-                    "video_bucketid": "4",
-                    "appid": "wxa75efa648b60994b",
-                    "_video_qq_appid": "wxa75efa648b60994",
-                },
-                "headers": {
-                    "Host": "pbaccess.video.qq.com",
-                    "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 11_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15F79;supportJDSHWK/1;",
-                    "accept": "application/json",
-                    "accept-language": "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2",
-                    "referer": "https://m.v.qq.com/",
-                    "content-type": "application/json;charset=UTF-8",
-                    "origin": "https://m.v.qq.com",
-                    "sec-fetch-dest": "empty",
-                    "sec-fetch-mode": "cors",
-                    "sec-fetch-site": "same-site",
-                    "te": "trailers",
-                },
-            }
-        )
-        data = self.jsonParse(s)
-        playList = []
-        for k in self.haskey(
-            data, "data.module_list_datas.0.module_datas.0.item_data_lists.item_datas"
-        ):
-            playList.append(
-                {
-                    "parse": k["item_params"]["vid"],
-                    "title": k["item_params"]["play_title"],
-                }
-            )
-
-        cgi = self.curl(
-            {
-                "url": f"https://vip.video.qq.com/fcgi-bin/comm_cgi?name=video_payinfo_new&cmd=24189&otype=json&type=1&cid={cover}",
+                "url": f"https://node.video.qq.com/x/api/float_vinfo2?cid={cover}",
                 # 'from':'',
             }
         )
-        cJson = self.jsonParse(cgi)
-        serial = self.haskey(cJson, "cid_title")
+        d = self.jsonParse(s)
+        serial = d["c"]["title"]
+        playList = d["c"]["video_ids"]
         return {"data": playList, "category": "video", "type": "qq", "serial": serial}
