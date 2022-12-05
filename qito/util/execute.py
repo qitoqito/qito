@@ -63,6 +63,7 @@ class Execute:
             "site",
             "title",
             "serial",
+            "total",
             "image",
             "vid",
             "aid",
