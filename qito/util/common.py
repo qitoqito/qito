@@ -526,14 +526,25 @@ class Common(execute.Execute, prepare.Prepare):
         try:
             s = json.loads(s)
         except:
-            getTry = self.match(
-                ["^try\s*\{\s*\n*\s*(\w+)", "^(\w+)\s*\n*\s*\(", "^(\w+\s*=)\s*\{"], s
-            )
-
             try:
-                s = json.loads(re.match(".*?({.*}).*", s, re.S).group(1))
+                if self.match(["\w+\s*:", "'\w+'\s*:"], s):
+                    x = s.replace("'", '"')
+                    x = re.sub("\s+", "", x)
+                    y = re.compile(r"([\w$]+):")
+                    x = y.sub(r'"\1":', x)
+                    s = json.loads(x)
+                else:
+                    s = json.loads(re.match(".*?({.*}).*", s, re.S).group(1))
             except:
                 try:
+                    getTry = self.match(
+                        [
+                            "^try\s*\{\s*\n*\s*(\w+)",
+                            "^(\w+)\s*\n*\s*\(",
+                            "^(\w+\s*=)\s*\{",
+                        ],
+                        s,
+                    )
                     c = execjs.compile(
                         """
                     function kk() {
@@ -545,17 +556,6 @@ class Common(execute.Execute, prepare.Prepare):
                     s = c.call("kk")
                 except:
                     pass
-                # e = quickjs.Function(
-                #     "kk",
-                #     """
-                #     function kk() {
-                #         return %s;
-                #     }
-                #     """
-                #     % s.replace(getTry, "cbData="),
-                # )
-                #
-                # s = e()
 
         return s
 
