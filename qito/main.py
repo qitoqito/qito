@@ -190,7 +190,7 @@ class Parse(common.Common):
             assert len(data["data"]) > 0, "lists"
             params["category"] = data.get("category")
             params["type"] = data.get("type")
-
+            params["serial"] = data.get("serial")
             if params.get("choose"):
                 params["choose"] = str(params["choose"])
                 if ":" in params["choose"]:

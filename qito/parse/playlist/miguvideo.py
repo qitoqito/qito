@@ -20,8 +20,15 @@ class Main(template.Template):
         url = f"https://program-sc.miguvideo.com/program/v3/cont/content-info/{cover}/1"
         html = self.curl(url)
         json = self.loads(html)
+
         lists = [
             {"title": i["name"], "parse": i["pID"]}
             for i in self.haskey(json, "body.data.datas")
         ]
-        return {"data": lists, "category": "video", "type": "miguvideo"}
+        serial = self.haskey(json, "body.data.name")
+        return {
+            "data": lists,
+            "category": "video",
+            "type": "miguvideo",
+            "serial": serial,
+        }

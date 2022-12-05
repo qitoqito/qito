@@ -43,7 +43,7 @@ class Execute:
 
         if self.data["dir"].startswith("."):
             self.data["dir"] = f'{self.cwd}{self.data["dir"][1:]}'
-        if self.data.get("serial"):
+        if self.data.get("serial") and self.data.get("playlist"):
             self.data["dir"] = f"{self.data['dir']}/{self.data['serial']}"
         folder = [z for z in self.data["dir"].split("/") if z]
 
@@ -62,6 +62,7 @@ class Execute:
         for i in [
             "site",
             "title",
+            "serial",
             "image",
             "vid",
             "aid",

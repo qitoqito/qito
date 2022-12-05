@@ -58,7 +58,6 @@ class Main(template.Template):
         )
         data = self.jsonParse(s)
         playList = []
-
         for k in self.haskey(
             data, "data.module_list_datas.0.module_datas.0.item_data_lists.item_datas"
         ):
@@ -68,4 +67,13 @@ class Main(template.Template):
                     "title": k["item_params"]["play_title"],
                 }
             )
-        return {"data": playList, "category": "video", "type": "qq"}
+
+        cgi = self.curl(
+            {
+                "url": f"https://vip.video.qq.com/fcgi-bin/comm_cgi?name=video_payinfo_new&cmd=24189&otype=json&type=1&cid={cover}",
+                # 'from':'',
+            }
+        )
+        cJson = self.jsonParse(cgi)
+        serial = self.haskey(cJson, "cid_title")
+        return {"data": playList, "category": "video", "type": "qq", "serial": serial}

@@ -31,4 +31,5 @@ class Main(template.Template):
             f'https://www.ixigua.com/{i["albumId"]}?id={i["episodeId"]}'
             for i in json["data"]["playlist"]
         ]
-        return {"data": lists, "category": "video", "type": "ixigua"}
+        serial = self.haskey(json, "data.albumInfo.title")
+        return {"data": lists, "category": "video", "type": "ixigua", "serial": serial}
