@@ -139,26 +139,26 @@ class Main(template.Template):
                 "referer": "https://player.youku.com/embed/'",
             }
         )
-        # html = self.curl(
-        #     {
-        #         "url": f"http://ups.youku.com/ups/get.json?vid={vid}&ccode={ccode}&client_ip=192.168.1.1&utid={utid}&client_ts={self.timestamp}&ckey=100#4a8781f72f29ab250a484c1bf330aa99&site=-1&wintype=interior&p=1&fu=0&vs=1.0&rst=mp4&dq=flv&os=win&osv=&d=0&bt=pc&aw=w&needbf=1",
-        #         "referer":"https://player.youku.com/embed/'"
-        #         # 'from':'',
-        #     }
-        # )
+
         self.logging.debug(f"getVideo: {html} \r\n")
         json = self.loads(html.replace("http:", "https:"))
+
         assert "error" not in json, "data"
-        # pay = json["data"].get("show").get("pay")
         pay = self.haskey(json, "data.show.pay")
         title = json["data"]["video"]["title"]
+        if (
+            self.params.get("playlist")
+            and self.params.get("total")
+            and self.haskey(json, "data.show.stage")
+            and "第" not in title
+        ):
+            title = f"第{self.haskey(json, 'data.show.stage')}话_{title}"
         image = json["data"]["video"]["logo"]
         duration = json["data"]["video"]["seconds"]
         lang = []
         if self.haskey(json, "data.dvd.audiolang"):
             language2 = []
             for i in json["data"]["dvd"]["audiolang"]:
-
                 language2.append(
                     {
                         "url": f"https://v.youku.com/v_show/id_{i['vid']}.html",
