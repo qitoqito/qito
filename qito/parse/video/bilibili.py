@@ -82,7 +82,7 @@ class Main(template.Template):
                     cidData = bvJson["data"]["pages"][page - 1]
                     vid = cidData["cid"]
                     if "part" in cidData and page > 1:
-                        title = "%s--%s" % (title, cidData["part"])
+                        title = "第%s话_%s" % (title, cidData["part"])
                 else:
                     aid = self.dec(bvid)
 
