@@ -96,17 +96,15 @@ class Main(template.Template):
 
         if not utid:
             utid = "qyiUGD8MHWkCARudQQu7gaFM"
-        ccode = p.get("ccode") or "0524"
+        ccode = p.get("ccode") or "0521"
         params = {
             "vid": vid,
             "ccode": ccode,
             "client_ip": "192.168.1.1",
             "utid": utid,
             "client_ts": timestamp,
-            "ckey": "100#4a8781f72f29ab250a484c1bf330aa99#82",
-            "ptoken": "",
-            "stoken": "",
-            # "extag": "EXT-X-PRIVINF",
+            "ckey": "110#4a8781f72f29ab250a484c1bf330aa99#110",
+            "extag": "EXT-X-PRIVINF",
             "needbf": "1",
             "encryptR_client": "MzujwsgiTomoWckrTxQvuw==",
             "key_index": "key01",
@@ -130,13 +128,24 @@ class Main(template.Template):
             "fu": "0",
             "vs": "1.0",
             "os": "win_6.1-64",
-            "rst": "mp4",
+            # "rst": "mp4",
             "dq": "intelligent",
             "guid": "100000000000000000005F6601C594DE805741F0",
         }
         html = self.curl(
-            {"url": "https://ups.youku.com/ups/get.json", "params": params}
+            {
+                "url": "https://ups.youku.com/ups/get.json",
+                "params": params,
+                "referer": "https://player.youku.com/embed/'",
+            }
         )
+        # html = self.curl(
+        #     {
+        #         "url": f"http://ups.youku.com/ups/get.json?vid={vid}&ccode={ccode}&client_ip=192.168.1.1&utid={utid}&client_ts={self.timestamp}&ckey=100#4a8781f72f29ab250a484c1bf330aa99&site=-1&wintype=interior&p=1&fu=0&vs=1.0&rst=mp4&dq=flv&os=win&osv=&d=0&bt=pc&aw=w&needbf=1",
+        #         "referer":"https://player.youku.com/embed/'"
+        #         # 'from':'',
+        #     }
+        # )
         self.logging.debug(f"getVideo: {html} \r\n")
         json = self.loads(html.replace("http:", "https:"))
         assert "error" not in json, "data"
@@ -183,13 +192,13 @@ class Main(template.Template):
 
         for lk in json["data"]["stream"]:
             if lk["audio_lang"] in lang:
-                langDict[lk["audio_lang"]] = lk
+                langDict[lk["audio_lang"]] = langDict.get(lk["audio_lang"], [])
+                langDict[lk["audio_lang"]].append(lk)
             else:
                 langDict[lk["audio_lang"]] = []
 
         encodeid = vid.replace("=", "")
         vidStream = []
-
         for k, v in langDict.items():
             if encodeid in self.dumps(vid):
                 vidStream = v
@@ -209,9 +218,9 @@ class Main(template.Template):
 
         for kn in ary:
             for kb in stream:
-                if kb == "stream_type" and stream[kb] == kn:
-                    streamList.append(stream)
-                    quality.append(stream["stream_type"])
+                if kb["stream_type"] == kn:
+                    streamList.append(kb)
+                    quality.append(kb["stream_type"])
 
         show = self.data(quality, p["hd"])
 
