@@ -13,7 +13,8 @@ class Main(template.Template):
         self.title = "哔哩哔哩剧集列表"
 
     def videoList(self, params):
-        url=params["parse"]
+        serial = ""
+        url = params["parse"]
         lists = []
         if "space.bilibili.com" in url:
             uid = self.match("space.bilibili.com\/(\d+)", url)
@@ -46,7 +47,9 @@ class Main(template.Template):
 
         elif "/av" in url:
             aid = self.match("\/av(\d+)", url)
-            pageUrl = f"https://api.bilibili.com/x/player/pagelist?aid={aid}&jsonp=jsonp"
+            pageUrl = (
+                f"https://api.bilibili.com/x/player/pagelist?aid={aid}&jsonp=jsonp"
+            )
             html = self.curl(pageUrl)
             json = self.loads(html)
             assert json["code"] == 0, "data"
@@ -58,8 +61,18 @@ class Main(template.Template):
             html = self.curl(url)
             data = self.match("window.__INITIAL_STATE__=(\{.*?\});", html)
             json = self.loads(data)
+            serial = self.haskey(json, "mediaInfo.title")
             lists = [
-                {"parse": str(i["cid"]), "title": "%s %s" % (i["title"], i["longTitle"])}
+                {
+                    "parse": str(i["cid"]),
+                    "title": "%s %s" % (i["titleFormat"], i["longTitle"]),
+                }
                 for i in json["epList"]
             ]
-        return {"data": lists, "category": "video", "type": "bilibili"}
+
+        return {
+            "data": lists,
+            "category": "video",
+            "type": "bilibili",
+            "serial": serial,
+        }
