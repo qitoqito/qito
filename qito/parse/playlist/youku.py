@@ -46,20 +46,20 @@ class Main(template.Template):
                 {
                     "url": "https://ups.youku.com/ups/get.json",
                     "params": params,
-                    "referer": f"http://v.youku.com/v_show/id_{vid}.html",
                 }
             )
             json = self.jsonParse(html)
 
             serial = self.haskey(json, "data.show.title")
             cover = self.haskey(json, "data.show.encodeid")
-        s = self.curl(
+        if cover:
+            s = self.curl(
             {
                 "url": f"https://search.youku.com/api/search?appScene=show_episode&showIds={cover}&appCaller=h5"
             }
         )
-        data = self.loads(s)
-        playlist = self.column(data["serisesList"], "videoId")
+            data = self.loads(s)
+            playlist = self.column(data["serisesList"], "videoId")
         return {
             "data": playlist,
             "category": "video",
