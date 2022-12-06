@@ -103,7 +103,7 @@ class Main(template.Template):
             "client_ip": "192.168.1.1",
             "utid": utid,
             "client_ts": timestamp,
-            "ckey": "110#4a8781f72f29ab250a484c1bf330aa99#110",
+            "ckey": f"110#{self.md5(timestamp)}#82",
             "extag": "EXT-X-PRIVINF",
             "needbf": "1",
             "encryptR_client": "MzujwsgiTomoWckrTxQvuw==",
@@ -136,14 +136,14 @@ class Main(template.Template):
             {
                 "url": "https://ups.youku.com/ups/get.json",
                 "params": params,
-                "referer": "https://player.youku.com/embed/'",
+                "referer": "https://player.youku.com/embed/",
             }
         )
 
         self.logging.debug(f"getVideo: {html} \r\n")
         json = self.loads(html.replace("http:", "https:"))
 
-        assert "error" not in json, "data"
+        assert "error" not in json["data"], "data"
         pay = self.haskey(json, "data.show.pay")
         title = json["data"]["video"]["title"]
         if (
