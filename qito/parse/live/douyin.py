@@ -60,7 +60,7 @@ class Main(template.Template):
         extra = {"headers": {"remove": 1}}
 
         url = f"https://webcast.amemv.com/webcast/room/reflow/info/?verifyFp=&type_id=0&live_id=1&room_id={vid}&sec_user_id=&app_id=1128&msToken=yMsIx7vWwDBG84R8-&X-Bogus=DFSzKIVOZriANtK4SQY19BjIVUIJ"
-        for i in range(3):
+        for i in range(6):
             html = self.curl(
                 {
                     "url": url,
@@ -100,24 +100,22 @@ class Main(template.Template):
                     )
                     if camera:
                         lang = []
-                        eee=1
+                        eee = 1
                         for abc in camera:
                             lang.append(
                                 {
                                     "url": f"https://live.douyin.com/fifaworldcup/{roomId}.html",
-                                    "langcode":
-                                        eee,
-                                    "language":
-                                        abc["title"],
+                                    "langcode": eee,
+                                    "language": abc["title"],
                                 }
                             )
-                            eee+=1
+                            eee += 1
                             if p.get("language") and (
                                 p["language"] == abc["title"]
-                                or p["language"] ==str(eee)
+                                or p["language"] == str(eee)
                             ):
                                 stream = abc["stream_info"]
-                                language=abc["title"]
+                                language = abc["title"]
                         extra["language"] = lang
 
                     #
@@ -129,7 +127,14 @@ class Main(template.Template):
             streamData = self.loads(
                 stream["live_core_sdk_data"]["pull_data"]["stream_data"]
             )["data"]
-            qualitys = list(streamData.keys())
+
+            qualitys = list(
+                filter(
+                    lambda x: x in streamData.keys(),
+                    ["md", "ld", "sd", "hd", "uhd", "origin"],
+                )
+            )
+
             qualitys.sort(key=["md", "ld", "sd", "hd", "uhd", "origin"].index)
             show1 = self.data(qualitys, p["hd"])
             dict = {
