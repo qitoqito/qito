@@ -154,7 +154,7 @@ class Common(execute.Execute, prepare.Prepare):
                 ] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) MicroMessenger/2.3.25(0x12031910) MacWechat Chrome/39.0.2171.95 Safari/537.36 NetType/WIFI WindowsWechat"
             else:
                 headers["User-Agent"] = params["ua"]
-        if not headers.get("user-agent") or not headers.get("User-Agent"):
+        if not headers.get("user-agent") and not headers.get("User-Agent"):
             headers[
                 "User-Agent"
             ] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36"
@@ -177,6 +177,7 @@ class Common(execute.Execute, prepare.Prepare):
             args["data"] = data
         elif json:
             args["json"] = json
+
         if response == "location":
             c = requests.head(
                 params["url"],
