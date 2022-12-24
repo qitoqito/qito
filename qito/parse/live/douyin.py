@@ -66,9 +66,10 @@ class Main(template.Template):
         assert p["vid"], "vid"
         vid = p["vid"]
         extra = {"headers": {"remove": 1}}
+        nonece = self.md5(self.timestamp)[:21]
 
         url = f"https://webcast.amemv.com/webcast/room/reflow/info/?verifyFp=verify_lapkms6y_MR3gmPCh_HHZ8_43fo_9eHH_qTz7VcpSlEOM&type_id=0&live_id=1&room_id={vid}&sec_user_id=MS4wLjABAAAAKM11dO6WJPb4aIIMy5_1OhPMlGYQcpExYPPjmcr2kMg&app_id=1128&msToken=Eb6dqCrkr399cQX_ZdvGApjwqt7nRy1YBAD2ZHLzWMYdSQnTDBMCkOrBrq-0bmIjLu7NvC-fvwBX6qjeRzxRpETz0IHiHo_uJ7hA7QIlEmWBWEuljKEZ&X-Bogus=DFSzKIVOEWkANV9-SkKBqBjIVU1x"
-        for i in range(6):
+        for i in range(3):
             html = self.curl(
                 {
                     "url": url,
@@ -78,10 +79,23 @@ class Main(template.Template):
             )
             if html:
                 break
-        data = self.jsonParse(html)
 
-        assert self.haskey(data, "data.room.status") == 2, "close"
-        room = self.haskey(data, "data.room")
+        data = self.jsonParse(html)
+        if self.haskey(data, "data.room"):
+            assert self.haskey(data, "data.room.status") == 2, "close"
+            room = self.haskey(data, "data.room")
+
+        else:
+            content = self.curl(
+                {
+                    "url": p["parse"],
+                    "cookie": f"__ac_nonce={nonece}; __ac_signature={self.getSign(nonece)};",
+                }
+            )
+            render = self.match(r'id="RENDER_DATA"\s*.+?\>([^\<]+)', content)
+            data = self.loads(self.unquote(render))
+            room = self.haskey(data, "app.initialState.roomStore.roomInfo.room")
+
         title = room["title"]
         image = room["cover"]["url_list"][0]
         anchor = room["owner"]["nickname"]
@@ -173,7 +187,6 @@ class Main(template.Template):
 
         ext = "flv"
         playback = "m3u8"
-
         return self.compact()
 
     def getSign(self, nonce):
