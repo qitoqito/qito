@@ -71,12 +71,13 @@ class Template(common.Common):
                 parse = {**self.params, **parse}
 
             self.data = parse
+
             if self.data.get("title"):
                 self.data["title"] = self.sub(
                     "[’!\"#$%&'()*+,./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^`{|}~]+",
-                    "",
+                    " ",
                     self.data["title"],
-                )
+                ).strip()
             if "show" in parse:
                 self.prepare_quality(parse)
             if self.params.get("download") and not self.params.get("query"):
