@@ -190,8 +190,12 @@ class Parse(common.Common):
             assert len(data["data"]) > 0, "lists"
             params["category"] = data.get("category")
             params["type"] = data.get("type")
-            params["serial"] = data.get("serial")
 
+            params["serial"] = self.sub(
+                "[’!\"#$%&'()*+,./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^`{|}~]+",
+                " ",
+                data.get("serial"),
+            ).strip()
             if params.get("choose"):
                 params["choose"] = str(params["choose"])
                 if ":" in params["choose"]:
@@ -211,6 +215,7 @@ class Parse(common.Common):
                             parseLists.append(data["data"][int(i) - 1])
                         except:
                             pass
+                assert len(parseLists) > 0, "Exceeds the length of the episode..."
             else:
                 parseLists = data["data"]
             params["total"] = len(data["data"])
