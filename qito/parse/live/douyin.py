@@ -54,13 +54,6 @@ class Main(template.Template):
                 pass
         return self.compact()
 
-    def parse324(self):
-
-        p = self.params
-        assert p["vid"], "vid"
-        vid = p["vid"]
-        url = f"https://live.douyin.com/562472165700"
-
     def parse(self):
         p = self.params
         assert p["vid"], "vid"
@@ -68,34 +61,17 @@ class Main(template.Template):
         extra = {"headers": {"remove": 1}}
         nonece = self.md5(self.timestamp)[:21]
 
-        url = f"https://webcast.amemv.com/webcast/room/reflow/info/?verifyFp=verify_lapkms6y_MR3gmPCh_HHZ8_43fo_9eHH_qTz7VcpSlEOM&type_id=0&live_id=1&room_id={vid}&sec_user_id=MS4wLjABAAAAKM11dO6WJPb4aIIMy5_1OhPMlGYQcpExYPPjmcr2kMg&app_id=1128&msToken=Eb6dqCrkr399cQX_ZdvGApjwqt7nRy1YBAD2ZHLzWMYdSQnTDBMCkOrBrq-0bmIjLu7NvC-fvwBX6qjeRzxRpETz0IHiHo_uJ7hA7QIlEmWBWEuljKEZ&X-Bogus=DFSzKIVOEWkANV9-SkKBqBjIVU1x"
-        for i in range(3):
-            html = self.curl(
-                {
-                    "url": url,
-                    "cookie": "s_v_web_id=verify_lc1sgmon_fjzIuO03_pzK3_4ycj_8GJg_S7s0MwHiGR90",
-                    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:108.0) Gecko/20100101 Firefox/108.0",
-                }
-            )
-            if html:
-                break
+        content = self.curl(
+            {
+                "url": p["parse"],
+                "cookie": f"__ac_nonce={nonece}; __ac_signature={self.getSign(nonece)};",
+            }
+        )
+        render = self.match(r'id="RENDER_DATA"\s*.+?\>([^\<]+)', content)
+        data = self.loads(self.unquote(render))
+        room = self.haskey(data, "app.initialState.roomStore.roomInfo.room")
 
-        data = self.jsonParse(html)
-        if self.haskey(data, "data.room"):
-            assert self.haskey(data, "data.room.status") == 2, "close"
-            room = self.haskey(data, "data.room")
-
-        else:
-            content = self.curl(
-                {
-                    "url": p["parse"],
-                    "cookie": f"__ac_nonce={nonece}; __ac_signature={self.getSign(nonece)};",
-                }
-            )
-            render = self.match(r'id="RENDER_DATA"\s*.+?\>([^\<]+)', content)
-            data = self.loads(self.unquote(render))
-            room = self.haskey(data, "app.initialState.roomStore.roomInfo.room")
-
+        assert self.haskey(room, "status") == 2, "close"
         title = room["title"]
         image = room["cover"]["url_list"][0]
         anchor = room["owner"]["nickname"]
