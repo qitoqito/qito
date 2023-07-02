@@ -194,7 +194,7 @@ class Parse(common.Common):
             params["serial"] = self.sub(
                 "[’!\"#$%&'()*+,./:;<=>?@，。?★、…【】《》？“”‘’！[\\]^`{|}~]+",
                 " ",
-                data.get("serial"),
+                params.get("serial") or data.get("serial"),
             ).strip()
             if params.get("choose"):
                 params["choose"] = str(params["choose"])
